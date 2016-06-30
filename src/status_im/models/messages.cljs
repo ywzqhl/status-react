@@ -50,15 +50,19 @@
 (defn get-messages
   ([chat-id] (get-messages chat-id 0))
   ([chat-id from]
-    (->> (-> (r/get-by-field :msgs :chat-id chat-id)
-             (r/sorted :timestamp :desc)
-             (r/page from (+ from c/default-number-of-messages))
-             (r/collection->map))
-         (into '())
-         reverse
-         (keep (fn [{:keys [content-type] :as message}]
+   (->> (-> (r/get-by-field :msgs :chat-id chat-id)
+            (r/sorted :timestamp :desc)
+            (r/page from (+ from c/default-number-of-messages))
+            (r/collection->map))
+        (into '())
+        reverse
+        (keep (fn [{:keys [content-type preview] :as message}]
                 (if (command-type? content-type)
-                  (update message :content str-to-map)
+                  (-> message
+                      (update :content str-to-map)
+                      (assoc :rendered-preview
+                             (when preview
+                               (generate-hiccup (read-string preview)))))
                   message))))))
 
 (defn update-message! [{:keys [msg-id] :as msg}]

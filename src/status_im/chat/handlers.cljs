@@ -243,7 +243,8 @@
      :outgoing         true
      :preview          preview-string
      :rendered-preview preview
-     :to-message       to-message}))
+     :to-message       to-message
+     :type             (:type command)}))
 
 (defn prepare-staged-commans
   [{:keys [current-chat-id identity] :as db} _]
@@ -298,7 +299,7 @@
   (doseq [new-command new-commands]
     (messages/save-message
       current-chat-id
-      (dissoc new-command :rendered-preview :to-message))))
+      (dissoc new-command :rendered-preview :to-message :type))))
 
 (defn dispatch-responded-requests!
   [{:keys [new-commands current-chat-id]} _]
@@ -308,9 +309,8 @@
 
 (defn invoke-commands-handlers!
   [{:keys [new-commands current-chat-id]}]
-  (doseq [{:keys [content] :as com} new-commands]
+  (doseq [{:keys [content type] :as com} new-commands]
     (let [{:keys [command content]} content
-          type (:type command)
           path [(if (= :command type) :commands :responses)
                 command
                 :handler]
@@ -565,6 +565,6 @@
        (let [suggestions (get-in db [:command-suggestions current-chat-id])
              mode (get-in db [:edit-mode current-chat-id])]
          (when (and (= :text mode)) (seq suggestions)
-           (dispatch [:fix-commands-suggestions-height])))))]
+                                    (dispatch [:fix-commands-suggestions-height])))))]
   (fn [db [_ h]]
     (assoc db :layout-height h)))

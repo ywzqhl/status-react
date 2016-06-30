@@ -115,3 +115,8 @@
       (log/debug action msg-id)
       (messages/update-message! {:msg-id          msg-id
                                  :delivery-status :failed}))))
+
+(register-handler :send-transaction!
+  (u/side-effect!
+    (fn [_ [_ amount message]]
+      (println :send-transacion! amount message))))
