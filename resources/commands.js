@@ -3,7 +3,7 @@ status.command({
     description: "Send location",
     color: "#9a5dcf",
     preview: function (params) {
-        var text =  status.components.text(
+        var text = status.components.text(
             {
                 style: {
                     marginTop: 5,
@@ -204,6 +204,28 @@ status.response({
                     color: "black"
                 }
             }, "*****");
+    }
+});
+
+status.command({
+    name: "send",
+    color: "#5fc48d",
+    description: "Send transaction",
+    params: [{
+        name: "amount",
+        type: status.types.NUMBER
+    }],
+    preview: function (params) {
+        return status.components.text(
+            {},
+            params.value + " ETH" 
+        );
+    },
+    handler: function (params) {
+        return {
+            event: "send-transaction",
+            params: [params.value]
+        };
     }
 });
 
