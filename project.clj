@@ -9,8 +9,8 @@
                  [re-frame "0.6.0"]
                  [prismatic/schema "1.0.4"]
                  ^{:voom {:repo   "git@github.com:status-im/status-lib.git"
-                          :branch "master"}}
-                 [status-im/protocol "0.1.1-20160630_153846-gbf92f5f"]
+                          :branch "send-transaction"}}
+                 [status-im/protocol "0.1.1-20160702_075443-gc04d41b"]
                  [natal-shell "0.1.6"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]]
   :plugins [[lein-cljsbuild "1.1.1"]

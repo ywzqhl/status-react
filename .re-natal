@@ -21,6 +21,7 @@
     "react-native-camera",
     "react-native-qrcode",
     "react-native-orientation",
+    "web3",
     "identicon.js"
   ],
   "imageDirs": [
