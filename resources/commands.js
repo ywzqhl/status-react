@@ -162,6 +162,31 @@ status.command({
     }]
 });
 
+function walletView(params) {
+    var webview;
+
+    webview = status.components.webView({
+        source: "http://status.im/demo/wallet.html",
+        javaScriptEnabled: true,
+        style: {
+            height: 300
+        }
+    });
+
+    return webview;
+}
+
+status.command({
+    name: "wallet",
+    description: "Wallet Demo",
+    color: "#b9f8fa",
+    params: [{
+        name: "webpage",
+        suggestions: walletView,
+        type: status.types.TEXT
+    }]
+});
+
 status.response({
     name: "confirmation-code",
     color: "#7099e6",

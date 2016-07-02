@@ -82,6 +82,10 @@ function scrollView(options, elements) {
     return ['scroll-view', options].concat(elements);
 }
 
+function webView(options, elements) {
+    return ['web-view', options];
+}
+
 var status = {
     command: function (n, d, h) {
         var command = new Command();
@@ -105,6 +109,7 @@ var status = {
         text: text,
         image: image,
         touchable: touchable,
-        scrollView: scrollView
+        scrollView: scrollView,
+        webView: webView
     }
 };
