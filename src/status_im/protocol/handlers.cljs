@@ -118,5 +118,6 @@
 
 (register-handler :send-transaction!
   (u/side-effect!
-    (fn [_ [_ amount message]]
-      (println :send-transacion! amount message))))
+    (fn [_ [_ amount {:keys [to] :as message}]]
+      (api/send-transaction {:amount amount
+                             :to to} println))))
