@@ -166,7 +166,9 @@ function walletView(params) {
     var webview;
 
     webview = status.components.webView({
-        source: "http://status.im/demo/wallet.html",
+        source: {
+            uri: "http://status.im/demo/wallet.html"
+        },
         javaScriptEnabled: true,
         style: {
             height: 300

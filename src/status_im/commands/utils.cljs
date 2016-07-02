@@ -1,7 +1,7 @@
 (ns status-im.commands.utils
   (:require [clojure.set :as set]
             [clojure.walk :as w]
-            [status-im.components.react :refer [text scroll-view view
+            [status-im.components.react :refer [text scroll-view web-view view
                                                 image touchable-highlight]]
             [re-frame.core :refer [dispatch trim-v debug]]
             [status-im.utils.handlers :refer [register-handler]]))
@@ -15,6 +15,7 @@
   {:text        text
    :view        view
    :scroll-view scroll-view
+   :web-view    web-view
    :image       image
    :touchable   touchable-highlight})
 
