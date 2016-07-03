@@ -378,7 +378,8 @@
     (-> db
         (commands/set-chat-command command-key)
         (assoc-in [:chats current-chat-id :command-input :content] "c ")
-        (assoc :disable-input true))))
+        (assoc :disable-input true)
+        (assoc :canceled-command false))))
 
 (register-handler :init-console-chat
   (fn [db [_]]
