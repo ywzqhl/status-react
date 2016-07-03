@@ -24,7 +24,8 @@
             [status-im.utils.logging :as log]
             [status-im.components.jail :as j]
             [status-im.utils.types :refer [json->clj]]
-            [status-im.commands.utils :refer [generate-hiccup]]))
+            [status-im.commands.utils :refer [generate-hiccup]]
+            [cljs.reader :refer [read-string]]))
 
 (register-handler :set-show-actions
   (fn [db [_ show-actions]]
@@ -185,6 +186,14 @@
 (def not-console?
   (complement console?))
 
+(defn check-previev [{:keys [content] :as message}]
+  (if-let [preview (:preview content)]
+    (let [rendered-preview (generate-hiccup (read-string preview))]
+      (assoc message
+        :preview preview
+        :rendered-preview rendered-preview))
+    message))
+
 (defn check-author-direction
   [db chat-id {:keys [from outgoing] :as message}]
   (let [previous-message (first (get-in db [:chats chat-id :messages]))]
@@ -240,7 +249,7 @@
     {:msg-id           (random/id)
      :from             identity
      :to               chat-id
-     :content          content
+     :content          (assoc content :preview preview-string)
      :content-type     content-type-command
      :outgoing         true
      :preview          preview-string
@@ -291,6 +300,19 @@
         (api/send-user-msg {:to      current-chat-id
                             :content content})))))
 
+(defn send-commands!
+  [{:keys [new-commands current-chat-id] :as db} _]
+  (doseq [new-message new-commands]
+    (when (and new-message (not-console? current-chat-id))
+      (let [{:keys [group-chat]} (get-in db [:chats current-chat-id])
+            content (:content new-message)]
+        (if group-chat
+          (api/send-group-user-msg {:group-id current-chat-id
+                                    :content  content})
+          (api/send-user-msg {:to           current-chat-id
+                              :content      content
+                              :content-type content-type-command}))))))
+
 (defn save-message-to-realm!
   [{:keys [new-message current-chat-id]} _]
   (when new-message
@@ -337,6 +359,7 @@
       ((enrich clear-input))
       ((enrich clear-staged-commands))
       ((after send-message!))
+      ((after send-commands!))
       ((after save-message-to-realm!))
       ((after save-commands-to-realm!))
       ((after dispatch-responded-requests!))
@@ -430,7 +453,7 @@
 
 (defn store-message!
   [{:keys [new-message]} [_ {chat-id :from}]]
-  (messages/save-message chat-id new-message))
+  (messages/save-message chat-id (dissoc new-message :rendered-preview)))
 
 (defn dispatch-request!
   [{:keys [new-message]} [_ {chat-id :from}]]
@@ -439,7 +462,9 @@
 
 (defn receive-message
   [db [_ {chat-id :from :as message}]]
-  (let [message' (check-author-direction db chat-id message)]
+  (let [message' (->> message
+                      (check-author-direction db chat-id)
+                      (check-previev))]
     (-> db
         (add-message-to-db chat-id message')
         (assoc :new-message message'))))
@@ -460,6 +485,7 @@
         messages (get-in db [:chats chat-id :messages])
         db' (assoc db :current-chat-id chat-id)]
     (dispatch [:load-requests! chat-id])
+    (dispatch [:load-commands! chat-id])
     (if (seq messages)
       db'
       (-> db'

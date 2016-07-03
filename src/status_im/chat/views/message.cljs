@@ -71,7 +71,7 @@
                 :style  st/command-image}]])
      (if preview
        preview
-       [text {:style st/command-text} content])]))
+       [text {:style st/command-text} (str content)])]))
 
 (defn set-chat-command [msg-id command]
   (dispatch [:set-response-chat-command msg-id (keyword (:name command))]))
@@ -98,7 +98,7 @@
 (defn text-message
   [{:keys [content] :as message}]
   [message-view message
-   [text {:style (st/text-message message)} content]])
+   [text {:style (st/text-message message)} (str content)]])
 
 (defmethod message-content text-content-type
   [wrapper message]
