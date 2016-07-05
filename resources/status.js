@@ -26,6 +26,7 @@ Command.prototype.create = function (com) {
     this.icon = com.icon;
     this.params = com.params || [];
     this.preview = com.preview;
+    this.fullscreen = com.fullscreen;
     this.addToCatalog();
 
     return this;
