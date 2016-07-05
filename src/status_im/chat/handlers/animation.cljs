@@ -50,8 +50,12 @@
   [(after #(dispatch [:command-edit-mode]))]
   (fn [{:keys [current-chat-id] :as db}]
     (let [suggestions? (seq (get-in db [:suggestions current-chat-id]))
+          fullscreen? (get-in db [:chats current-chat-id :command-input :command :fullscreen])
+          max-height (get-in db [:layout-height])
           height (if suggestions?
-                   middle-height
+                   (if fullscreen?
+                     max-height
+                     middle-height)
                    (get-minimum-height db))]
       (assoc-in db [:animations :to-response-height] height))))
 

@@ -160,6 +160,7 @@ public class GethService extends Service {
                 extStore.getAbsolutePath() + "/ethereum" :
                 getApplicationInfo().dataDir + "/ethereum";
         Log.d(TAG, "Starting background Geth Service in folder: " + dataFolder);
+
         try {
             final File newFile = new File(dataFolder);
             newFile.mkdir();
@@ -167,12 +168,21 @@ public class GethService extends Service {
             Log.e(TAG, "error making folder: " + dataFolder, e);
         }
 
+        final Runnable addPeer = new Runnable() {
+            public void run() {
+                Log.w("Geth", "adding peer");
+                Statusgo.addPeer("enode://409772c7dea96fa59a912186ad5bcdb5e51b80556b3fe447d940f99d9eaadb51d4f0ffedb68efad232b52475dd7bd59b51cee99968b3cc79e2d5684b33c4090c@139.162.166.59:30303");
+            }
+        };
+
         new Thread(new Runnable() {
             public void run() {
 
                 Statusgo.StartNode(dataFolder);
             }
         }).start();
+
+        handler.postDelayed(addPeer, 5000);
     }
 
     protected void stopNode(Message message) {

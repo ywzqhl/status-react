@@ -179,9 +179,10 @@
    [actions-list-view]])
 
 (defn toolbar-content []
-  (let [{:keys [group-chat name contacts]}
-        (subscribe [:chat-properties [:group-chat :name :contacts]])
-        show-actions (subscribe [:show-actions])]
+  (let [{:keys [group-chat name contacts chat-id]}
+        (subscribe [:chat-properties [:group-chat :name :contacts :chat-id]])
+        show-actions (subscribe [:show-actions])
+        name (or name chat-id)]
     (fn []
       [view (st/chat-name-view @show-actions)
        [text {:style st/chat-name-text}

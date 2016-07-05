@@ -27,7 +27,7 @@
 (defview chat-icon-view [chat-id group-chat name online styles]
   [photo-path [:chat-photo chat-id]]
   [view (:container styles)
-   (if-not (s/blank? photo-path)
+   (if-not (or (s/blank? photo-path) (= chat-id "console"))
      [chat-icon photo-path styles]
      [default-chat-icon name styles])
    (when-not group-chat
