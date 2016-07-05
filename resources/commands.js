@@ -182,6 +182,7 @@ status.command({
     name: "wallet",
     description: "Wallet Demo",
     color: "#b9f8fa",
+    fullscreen: true,
     params: [{
         name: "webpage",
         suggestions: walletView,
