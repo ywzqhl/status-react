@@ -22,7 +22,7 @@
 
 (defview transaction-page [index transaction]
   []
-  (let [title "Test"
+  (let [title "0.3242 ETH to Jack"
         transactions-info [[(label :t/status) (label :t/pending-confirmation)]
                            [(label :t/recipient) "Alex"]
                            [(label :t/one-more-item) (label :t/value)]

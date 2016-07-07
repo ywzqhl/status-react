@@ -22,7 +22,7 @@
 (defview confirm []
   [transactions [:get :transactions]
    {:keys [password]} [:get :confirm-transactions]]
-  (let [valid? true
+  (let [valid? (pos? (count password))
         transactions [{} {} {} {} {}]]
     [view st/transactions-screen
      [toolbar
@@ -33,7 +33,7 @@
        :custom-content [view {:style toolbar-title-container}
                         [text {:style st/toolbar-title-text}
                          (label-pluralize (count transactions) :t/confirm-transactions)]]
-       :action         {:image   {:source {:uri (if valid? :icon_ok :icon_ok_disabled)}
+       :action         {:image   {:source {:uri (if valid? :icon_ok :icon_ok_disabled_inversed)}
                                   :style  icon-ok}
                         :handler #(when valid? (dispatch [:accept-transactions transactions password]))}}]
      [carousel {:pageStyle st/carousel-page-style
