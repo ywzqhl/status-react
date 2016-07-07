@@ -17,6 +17,7 @@
   [popular-tags [:get-popular-tags 3]]
   (if (pos? (count popular-tags))
     [carousel {:pageStyle st/carousel-page-style
+               :gap 16
                :sneak     20}
      (for [{:keys [name count]} popular-tags]
        [discovery-popular-list name count])]

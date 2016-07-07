@@ -23,7 +23,7 @@
   [transactions [:get :transactions]
    {:keys [password]} [:get :confirm-transactions]]
   (let [valid? true
-        transactions [{} {}]]
+        transactions [{} {} {} {} {}]]
     [view st/transactions-screen
      [toolbar
       {:style          st/transactions-toolbar

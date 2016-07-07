@@ -55,7 +55,7 @@
    :fontSize   14})
 
 (def section-spacing
-  {:paddingLeft   30
+  {:paddingLeft   16
    :paddingTop    15
    :paddingBottom 15})
 
