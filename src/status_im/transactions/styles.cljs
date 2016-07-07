@@ -32,11 +32,9 @@
    :backgroundColor "#f3f4f4"})
 
 (def title-bar
-  {:flex 1
-   :flexDirection :row
-   :backgroundColor :white
+  {:backgroundColor :white
    :height 39
-   :alignItems :center})
+   :justifyContent :center})
 
 (def title-bar-text
   {:color "#838c93"
@@ -56,16 +54,14 @@
    :paddingTop 6})
 
 (def scroll-view-container
-  {:flex 1
-   :height 175
-   :paddingVertical 6})
+  {:flex 1})
 
 (def scroll-view
   {:flex 1
    :height 175})
 
 (def scroll-view-content
-  {})
+  {:paddingVertical 6})
 
 (def transaction-info-row
   {:flex 1
@@ -83,8 +79,9 @@
    :flexDirection :column
    :paddingHorizontal 6})
 
-(def transaction-info-title-container
-  {:padding 6})
+(def transaction-info-item
+  {:flex 1
+   :padding 6})
 
 (def transaction-info-title
   {:textAlign :right

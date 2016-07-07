@@ -37,7 +37,7 @@
                                   :style  icon-ok}
                         :handler #(when valid? (dispatch [:accept-transactions transactions password]))}}]
      [carousel {:pageStyle st/carousel-page-style
-                :gap 16
+                :gap       16
                 :sneak     20}
       (when transactions
         (for [index (range (count transactions))]
@@ -52,8 +52,7 @@
         :labelColor      "#ffffff80"
         :value           password
         :label           (label :t/password)
-        :onChangeText    #(dispatch [:set-in [:confirm-transactions :password] %])}]
-       ]]))
+        :onChangeText    #(dispatch [:set-in [:confirm-transactions :password] %])}]]]))
 
 
 ;(re-frame.core/dispatch [:set :view-id :confirm])

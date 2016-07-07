@@ -30,18 +30,19 @@
                            [(label :t/one-more-item) (label :t/value)]
                            [(label :t/one-more-item) (label :t/value)]
                            [(label :t/one-more-item) (label :t/value)]]]
-  [view {:style st/transaction-page
-         :key   index}
-         [title-bar title]
-                [view st/scroll-view-container
-                 [scroll-view {:style                        st/scroll-view
-                               :contentContainerStyle        st/scroll-view-content
-                               :showsVerticalScrollIndicator true
-                               :scrollEnabled                true}
-                  (for [index (range (count transactions-info))]
-                    [view {:style st/transaction-info-row
-                           :key index}
-                     [view st/transaction-info-column-title
-                      [text {:style st/transaction-info-title} (first (nth transactions-info index))]]
-                     [view st/transaction-info-column-value
-                      [text {:style st/transaction-info-value} (last (nth transactions-info index))]]])]]]))
+    [view {:style st/transaction-page
+           :key   index}
+     [title-bar title]
+     [view st/scroll-view-container
+      [scroll-view {:style                        st/scroll-view
+                    :contentContainerStyle        st/scroll-view-content
+                    :showsVerticalScrollIndicator true
+                    :scrollEnabled                true}
+       (for [index (range (count transactions-info))]
+         [view {:style st/transaction-info-item
+                :key   index}
+          [view {:style st/transaction-info-row}
+           [view st/transaction-info-column-title
+            [text {:style st/transaction-info-title} (first (nth transactions-info index))]]
+           [view st/transaction-info-column-value
+            [text {:style st/transaction-info-value} (last (nth transactions-info index))]]]])]]]))
