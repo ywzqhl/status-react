@@ -37,6 +37,7 @@
                                   :style  icon-ok}
                         :handler #(when valid? (dispatch [:accept-transactions transactions password]))}}]
      [carousel {:pageStyle st/carousel-page-style
+                :gap 16
                 :sneak     20}
       (when transactions
         (for [index (range (count transactions))]
