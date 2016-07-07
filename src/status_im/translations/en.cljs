@@ -133,7 +133,17 @@
    :password                              "Password"
    :login                                 "Login"
 
-   ;users
+   ;accounts
    :add-account                           "Add account"
 
+   ;transactions
+   :confirm-transactions                  {:one   "Confirm transaction"
+                                           :other "Confirm {{count}} transactions"
+                                           :zero  "No transactions"}
+   :status                                "Status"
+   :pending-confirmation                  "Pending confirmation"
+   :recipient                             "Recipient"
+   :one-more-item                         "One more item"
+   :fee                                   "Fee"
+   :value                                 "Value"
    })
