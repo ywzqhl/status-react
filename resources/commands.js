@@ -179,9 +179,9 @@ function walletView(params) {
 }
 
 status.command({
-    name: "wallet",
-    description: "Wallet Demo",
-    color: "#b9f8fa",
+    name: "bzz",
+    description: "Browse Swarm",
+    color: "#ffa500",
     fullscreen: true,
     params: [{
         name: "webpage",
