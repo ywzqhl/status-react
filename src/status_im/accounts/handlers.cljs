@@ -3,7 +3,8 @@
             [re-frame.core :refer [register-handler after dispatch debug]]
             [status-im.utils.logging :as log]
             [status-im.components.react :refer [geth]]
-            [status-im.utils.types :refer [json->clj]]
+            [status-im.utils.types :refer [json->clj
+                                           clj->json]]
             [status-im.persistence.simple-kv-store :as kv]
             [status-im.protocol.state.storage :as storage]
             [clojure.string :as str]))
@@ -29,6 +30,7 @@
     (log/debug "Created account: " result)
     (when (not (str/blank? public-key))
       (do
+        (.addWhisperFilter geth (clj->json {:to public-key}) (fn [result] (log/debug "whisper filter added")))
         (save-password password)
         (dispatch [:login-account address password])
         (dispatch [:initialize-protocol account])

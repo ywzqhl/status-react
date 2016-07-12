@@ -85,6 +85,43 @@ public class GethConnector extends ServiceConnector {
         }
     }
 
+    public void addWhisperFilter(String callbackIdentifier, String filter) {
+        if (checkBound()) {
+            Bundle data = new Bundle();
+            data.putString("filter", filter);
+            Message msg = createMessage(callbackIdentifier, GethMessages.MSG_ADD_WHISPER_FILTER, data);
+            try {
+                serviceMessenger.send(msg);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Exception sending message(addAccount) to service: ", e);
+            }
+        }
+    }
+
+    public void removeWhisperFilter(String callbackIdentifier, int idFilter) {
+        if (checkBound()) {
+            Bundle data = new Bundle();
+            data.putInt("idFilter", idFilter);
+            Message msg = createMessage(callbackIdentifier, GethMessages.MSG_REMOVE_WHISPER_FILTER, data);
+            try {
+                serviceMessenger.send(msg);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Exception sending message(addAccount) to service: ", e);
+            }
+        }
+    }
+
+    public void clearWhisperFilters(String callbackIdentifier) {
+        if (checkBound()) {
+            Message msg = createMessage(callbackIdentifier, GethMessages.MSG_CLEAR_WHISPER_FILTERS, null);
+            try {
+                serviceMessenger.send(msg);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Exception sending message(addAccount) to service: ", e);
+            }
+        }
+    }
+
 
     protected boolean checkBound() {
 

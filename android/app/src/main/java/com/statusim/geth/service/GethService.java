@@ -1,14 +1,18 @@
 package com.statusim.geth.service;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.*;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
 import com.github.status_im.status_go.Statusgo;
+import com.statusim.R;
+import org.json.JSONObject;
 
 import java.io.File;
 
@@ -21,6 +25,10 @@ public class GethService extends Service {
     private final Handler handler = new Handler();
 
     private static String dataFolder;
+
+    private static GethService gethService = null;
+
+    private static int WHISPER_NOTIFICATION_ID = 1;
 
     static class IncomingHandler extends Handler {
 
@@ -48,6 +56,50 @@ public class GethService extends Service {
 
     public static void signalEvent(String jsonEvent) {
         System.out.println("\n\n\nIT WOOOOOORKS1111!!!!!!\n\n\n");
+        Log.d(TAG, jsonEvent);
+        if (gethService != null) {
+            try {
+                gethService.onGethEvent(new JSONObject(jsonEvent));
+            } catch (Exception e) {
+                Log.e(TAG, "Exception converting event to json: ", e);
+            }
+        }
+    }
+
+    public void sendNotification(int id, String title, String content) {
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setContentTitle("Scheduled Notification")
+                .setAutoCancel(true)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.icon_tab_chats);
+
+       /* PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                NOTIFICATION_ID,
+                new Intent(this, NotificationActivity.class),
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        builder.setDeleteIntent(NotificationEventReceiver.getDeleteIntent(this));
+        */
+
+        final NotificationManager manager = (NotificationManager) this.getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.notify(id, builder.build());
+    }
+
+    public void onGethEvent(JSONObject event) {
+        try {
+            String eventType = event.getString("type");
+            switch(eventType) {
+                case "whisper":
+                    JSONObject whisperEvent = event.getJSONObject("event");
+                    sendNotification(WHISPER_NOTIFICATION_ID, "You received a status message", whisperEvent.getString("payload"));
+                    break;
+                default:
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling geth event: ", e);
+        }
     }
 
     @Nullable
@@ -61,6 +113,7 @@ public class GethService extends Service {
         super.onCreate();
         System.loadLibrary("statusgoraw");
         System.loadLibrary("statusgo");
+        gethService = this;
     }
 
     @Override
@@ -100,6 +153,18 @@ public class GethService extends Service {
 
             case GethMessages.MSG_LOGIN:
                 login(message);
+                break;
+
+            case GethMessages.MSG_ADD_WHISPER_FILTER:
+                addWhisperFilter(message);
+                break;
+
+            case GethMessages.MSG_REMOVE_WHISPER_FILTER:
+                removeWhisperFilter(message);
+                break;
+
+            case GethMessages.MSG_CLEAR_WHISPER_FILTERS:
+                clearWhisperFilters(message);
                 break;
 
             default:
@@ -219,6 +284,33 @@ public class GethService extends Service {
         Bundle replyData = new Bundle();
         replyData.putString("result", result);
         createAndSendReply(message, GethMessages.MSG_LOGGED_IN, replyData);
+    }
+
+    protected void addWhisperFilter(Message message) {
+        Bundle data = message.getData();
+        String filter = data.getString("filter");
+        String result = Statusgo.addWhisperFilter(filter);
+        Log.d(TAG, "Added whisper filter: " + result);
+
+        Bundle replyData = new Bundle();
+        replyData.putString("result", result);
+        createAndSendReply(message, GethMessages.MSG_WHISPER_FILTER_ADDED, replyData);
+    }
+
+    protected void removeWhisperFilter(Message message) {
+        Bundle data = message.getData();
+        int idFilter = data.getInt("idFilter");
+        Statusgo.removeWhisperFilter(idFilter);
+        Log.d(TAG, "Removed whisper filter: " + idFilter);
+
+        createAndSendReply(message, GethMessages.MSG_WHISPER_FILTER_REMOVED, null);
+    }
+
+    protected void clearWhisperFilters(Message message) {
+        Statusgo.clearWhisperFilters();
+        Log.d(TAG, "Cleared whisper filters.");
+
+        createAndSendReply(message, GethMessages.MSG_WHISPER_FILTERS_CLEARED, null);
     }
 
     public static boolean isRunning() {

@@ -53,4 +53,34 @@ public class GethMessages {
      */
     public static final int MSG_ACCOUNT_ADDED = 10;
 
+    /**
+     * Add an whisper filter
+     */
+    public static final int MSG_ADD_WHISPER_FILTER = 11;
+
+    /**
+     * Whisper filter added event
+     */
+    public static final int MSG_WHISPER_FILTER_ADDED = 12;
+
+    /**
+     * Remove an whisper filter
+     */
+    public static final int MSG_REMOVE_WHISPER_FILTER = 13;
+
+    /**
+     * Whisper filter removed event
+     */
+    public static final int MSG_WHISPER_FILTER_REMOVED = 14;
+
+
+    /**
+     * Remove all whisper filters
+     */
+    public static final int MSG_CLEAR_WHISPER_FILTERS = 15;
+
+    /**
+     * Whisper filters removed event
+     */
+    public static final int MSG_WHISPER_FILTERS_CLEARED = 16;
 }

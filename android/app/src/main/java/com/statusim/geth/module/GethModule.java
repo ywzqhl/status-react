@@ -20,10 +20,8 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
     protected GethConnector geth = null;
     protected String handlerIdentifier = createIdentifier();
 
-    protected HashMap<String, Callback> startNodeCallbacks = new HashMap<>();
-    protected HashMap<String, Callback> createAccountCallbacks = new HashMap<>();
-    protected HashMap<String, Callback> addAccountCallbacks = new HashMap<>();
-    protected HashMap<String, Callback> unlockAccountCallbacks = new HashMap<>();
+    protected HashMap<String, Callback> callbacks = new HashMap<>();
+
 
 
     public GethModule(ReactApplicationContext reactContext) {
@@ -89,35 +87,46 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
         Bundle data = message.getData();
         String callbackIdentifier = data.getString(GethConnector.CALLBACK_IDENTIFIER);
         Log.d(TAG, "callback identifier: " + callbackIdentifier);
-        Callback callback = null;
+        Callback callback = callbacks.remove(callbackIdentifier);
+        if (callback == null) {
+            Log.d(TAG, "Could not find callback: " + callbackIdentifier);
+        }
         switch (message.what) {
             case GethMessages.MSG_NODE_STARTED:
-                Log.d(TAG, "handle startNodeCallbacks size: " + startNodeCallbacks.size());
-                callback = startNodeCallbacks.remove(callbackIdentifier);
                 if (callback != null) {
                     callback.invoke(true);
-                } else {
-                    Log.d(TAG, "Could not find callback: " + callbackIdentifier);
                 }
                 break;
             case GethMessages.MSG_NODE_STOPPED:
                 break;
             case GethMessages.MSG_ACCOUNT_CREATED:
-                callback = createAccountCallbacks.remove(callbackIdentifier);
                 if (callback != null) {
                     callback.invoke(data.getString("data"));
                 }
                 break;
             case GethMessages.MSG_ACCOUNT_ADDED:
-                callback = addAccountCallbacks.remove(callbackIdentifier);
                 if (callback != null) {
                     callback.invoke(null, "{ \"address\": \"" + data.getString("address") + "\"}");
                 }
                 break;
             case GethMessages.MSG_LOGGED_IN:
-                callback = unlockAccountCallbacks.remove(callbackIdentifier);
                 if (callback != null) {
                     callback.invoke(null, "{ \"result\": \"" + data.getString("result") + "\"}");
+                }
+                break;
+            case GethMessages.MSG_WHISPER_FILTER_ADDED:
+                if (callback != null) {
+                    callback.invoke(data.getString("result"));
+                }
+                break;
+            case GethMessages.MSG_WHISPER_FILTER_REMOVED:
+                if (callback != null) {
+                    callback.invoke();
+                }
+                break;
+            case GethMessages.MSG_WHISPER_FILTERS_CLEARED:
+                if (callback != null) {
+                    callback.invoke();
                 }
                 break;
             default:
@@ -149,8 +158,7 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
 
         String callbackIdentifier = createIdentifier();
         Log.d(TAG, "Created callback identifier: " + callbackIdentifier);
-        startNodeCallbacks.put(callbackIdentifier, callback);
-        Log.d(TAG, "startNodeCallbacks size: " + startNodeCallbacks.size());
+        callbacks.put(callbackIdentifier, callback);
 
         geth.startNode(callbackIdentifier);
     }
@@ -171,7 +179,7 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
         }
 
         String callbackIdentifier = createIdentifier();
-        unlockAccountCallbacks.put(callbackIdentifier, callback);
+        callbacks.put(callbackIdentifier, callback);
 
         geth.login(callbackIdentifier, address, password);
     }
@@ -192,7 +200,7 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
         }
 
         String callbackIdentifier = createIdentifier();
-        createAccountCallbacks.put(callbackIdentifier, callback);
+        callbacks.put(callbackIdentifier, callback);
 
         geth.createAccount(callbackIdentifier, password);
     }
@@ -213,8 +221,68 @@ public class GethModule extends ReactContextBaseJavaModule implements LifecycleE
         }
 
         String callbackIdentifier = createIdentifier();
-        addAccountCallbacks.put(callbackIdentifier, callback);
+        callbacks.put(callbackIdentifier, callback);
         geth.addAccount(callbackIdentifier, privateKey);
+    }
+
+    @ReactMethod
+    public void addWhisperFilter(String filter, Callback callback) {
+
+        Activity currentActivity = getCurrentActivity();
+
+        if (currentActivity == null) {
+            callback.invoke("Activity doesn't exist");
+            return;
+        }
+
+        if (geth == null) {
+            callback.invoke("Geth connector is null");
+            return;
+        }
+
+        String callbackIdentifier = createIdentifier();
+        callbacks.put(callbackIdentifier, callback);
+        geth.addWhisperFilter(callbackIdentifier, filter);
+    }
+
+    @ReactMethod
+    public void removeWhisperFilter(int idFilter, Callback callback) {
+
+        Activity currentActivity = getCurrentActivity();
+
+        if (currentActivity == null) {
+            callback.invoke("Activity doesn't exist");
+            return;
+        }
+
+        if (geth == null) {
+            callback.invoke("Geth connector is null");
+            return;
+        }
+
+        String callbackIdentifier = createIdentifier();
+        callbacks.put(callbackIdentifier, callback);
+        geth.removeWhisperFilter(callbackIdentifier, idFilter);
+    }
+
+    @ReactMethod
+    public void clearWhisperFilters(Callback callback) {
+
+        Activity currentActivity = getCurrentActivity();
+
+        if (currentActivity == null) {
+            callback.invoke("Activity doesn't exist");
+            return;
+        }
+
+        if (geth == null) {
+            callback.invoke("Geth connector is null");
+            return;
+        }
+
+        String callbackIdentifier = createIdentifier();
+        callbacks.put(callbackIdentifier, callback);
+        geth.clearWhisperFilters(callbackIdentifier);
     }
 
     protected String createIdentifier() {
