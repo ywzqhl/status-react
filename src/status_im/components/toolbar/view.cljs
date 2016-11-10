@@ -25,7 +25,8 @@
       [view (st/toolbar-nav-actions-container actions)
        (when (not hide-nav?)
          (if nav-action
-           [touchable-highlight {:on-press (:handler nav-action)}
+           [touchable-highlight {:on-press            (:handler nav-action)
+                                 :accessibility-label :toolbar-left-action}
             [view (get-in platform-specific [:component-styles :toolbar-nav-action])
              [image (:image nav-action)]]]
            [touchable-highlight {:on-press            #(dispatch [:navigate-back])
@@ -43,7 +44,8 @@
          (for [{action-image   :image
                 action-handler :handler} actions]
            ^{:key (str "action-" action-image)}
-           [touchable-highlight {:on-press action-handler}
+           [touchable-highlight {:on-press            action-handler
+                                 :accessibility-label :toolbar-right-action}
             [view st/toolbar-action
              [image action-image]]])
          custom-action)]]

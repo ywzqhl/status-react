@@ -137,7 +137,7 @@
   (.-width (.-layout (.-nativeEvent event))))
 
 (defn reagent-render [data children]
-  (let [component        (r/current-component)
+  (let [component (r/current-component)
         {:keys [has-focus
                 float-label?
                 label-top
@@ -146,44 +146,45 @@
                 current-value
                 max-line-width]} (r/state component)
         {:keys [wrapper-style input-style label-hidden? line-color focus-line-color secure-text-entry
-                label-color error-color error label value on-focus on-blur
+                label-color error-color error label value on-focus on-blur accessibility-label
                 on-change-text on-change on-end-editing editable placeholder]} (merge default-props (r/props component))
-        line-color       (if error error-color line-color)
+        line-color (if error error-color line-color)
         focus-line-color (if error error-color focus-line-color)
-        label-color      (if (and error (not float-label?)) error-color label-color)
-        label            (when-not label-hidden?
-                           (if error (str label " *") label))]
+        label-color (if (and error (not float-label?)) error-color label-color)
+        label (when-not label-hidden?
+                (if error (str label " *") label))]
     [view (merge st/text-field-container wrapper-style)
      (when-not label-hidden?
        [animated-text {:style (st/label label-top label-font-size label-color)} label])
-     [text-input {:style             (merge st/text-input input-style)
-                  :placeholder       (or placeholder "")
-                  :editable          editable
-                  :secure-text-entry secure-text-entry
-                  :on-focus          #(on-input-focus {:component component
-                                                       :animation {:top           label-top
-                                                                   :to-top        (:label-top config)
-                                                                   :font-size     label-font-size
-                                                                   :to-font-size  (:label-font-small config)
-                                                                   :line-width    line-width
-                                                                   :to-line-width max-line-width}
-                                                       :onFocus   on-focus})
-                  :on-blur           #(on-input-blur {:component component
-                                                      :value     (or current-value value)
-                                                      :animation {:top           label-top
-                                                                  :to-top        (:label-bottom config)
-                                                                  :font-size     label-font-size
-                                                                  :to-font-size  (:label-font-large config)
-                                                                  :line-width    line-width
-                                                                  :to-line-width 0}
-                                                      :onBlur    on-blur})
-                  :on-change-text    (fn [text]
-                                       (r/set-state component {:current-value text})
-                                       (on-change-text text))
-                  :on-change         #(on-change %)
-                  :default-value     value
-                  :on-end-editing    (when on-end-editing
-                                       on-end-editing)}]
+     [text-input {:style               (merge st/text-input input-style)
+                  :placeholder         (or placeholder "")
+                  :editable            editable
+                  :secure-text-entry   secure-text-entry
+                  :accessibility-label accessibility-label
+                  :on-focus            #(on-input-focus {:component component
+                                                         :animation {:top           label-top
+                                                                     :to-top        (:label-top config)
+                                                                     :font-size     label-font-size
+                                                                     :to-font-size  (:label-font-small config)
+                                                                     :line-width    line-width
+                                                                     :to-line-width max-line-width}
+                                                         :onFocus   on-focus})
+                  :on-blur             #(on-input-blur {:component component
+                                                        :value     (or current-value value)
+                                                        :animation {:top           label-top
+                                                                    :to-top        (:label-bottom config)
+                                                                    :font-size     label-font-size
+                                                                    :to-font-size  (:label-font-large config)
+                                                                    :line-width    line-width
+                                                                    :to-line-width 0}
+                                                        :onBlur    on-blur})
+                  :on-change-text      (fn [text]
+                                         (r/set-state component {:current-value text})
+                                         (on-change-text text))
+                  :on-change           #(on-change %)
+                  :default-value       value
+                  :on-end-editing      (when on-end-editing
+                                         on-end-editing)}]
      [view {:style    (st/underline-container line-color)
             :onLayout #(r/set-state component {:max-line-width (get-width %)})}
       [animated-view {:style (st/underline focus-line-color line-width)}]]

@@ -16,14 +16,14 @@
                                   :tension 40}))))
 
 (defview tab [_]
-  (let [icon-anim-value         (anim/create-value 0)
-        text-anim-value         (anim/create-value 0)
+  (let [icon-anim-value (anim/create-value 0)
+        text-anim-value (anim/create-value 0)
         icon-reverse-anim-value (anim/create-value 0)
         text-reverse-anim-value (anim/create-value 0)
-        on-update               (comp (animation-logic icon-anim-value 0)
-                                      (animation-logic text-anim-value 0)
-                                      (animation-logic icon-reverse-anim-value 0)
-                                      (animation-logic text-reverse-anim-value 30))]
+        on-update (comp (animation-logic icon-anim-value 0)
+                        (animation-logic text-anim-value 0)
+                        (animation-logic icon-reverse-anim-value 0)
+                        (animation-logic text-reverse-anim-value 30))]
     (r/create-class
       {:component-did-mount
        on-update
@@ -37,9 +37,10 @@
          (anim/set-value text-reverse-anim-value -8))
        :reagent-render
        (fn [{:keys [view-id title icon selected-view-id prev-view-id]}]
-         [touchable-highlight {:style    st/tab
-                               :disabled (= view-id selected-view-id)
-                               :onPress  #(dispatch [:navigate-to-tab view-id])}
+         [touchable-highlight {:style               st/tab
+                               :disabled            (= view-id selected-view-id)
+                               :accessibility-label (str (name view-id) "-tab")
+                               :onPress             #(dispatch [:navigate-to-tab view-id])}
           [view {:style (st/tab-container (= selected-view-id view-id))}
            [animated-view {:style (st/animated-offset (cond
                                                         (= selected-view-id view-id) icon-anim-value
@@ -53,6 +54,6 @@
                                                         :else 0))}
             [text {:style st/tab-title}
              (if (or (= selected-view-id view-id)
-                       (= prev-view-id view-id))
+                     (= prev-view-id view-id))
                title
                " ")]]]])})))

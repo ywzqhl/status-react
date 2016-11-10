@@ -73,7 +73,7 @@
                                 :icon_ok_disabled)}
                 :style  icon-ok}
       :handler #(when (str/blank? error-message)
-                 (on-add-contact new-contact-identity))}]))
+                  (on-add-contact new-contact-identity))}]))
 
 (defview contact-whisper-id-input [whisper-identity error]
   [current-account [:get-current-account]]
@@ -81,15 +81,16 @@
                 (validation-error-message whisper-identity current-account error))]
     [view button-input-container
      [text-field
-      {:error          error
-       :error-color    "#7099e6"
-       :input-style    st/qr-input
-       :value          whisper-identity
-       :wrapper-style  button-input
-       :label          (label :t/address)
-       :on-change-text #(do
-                         (dispatch [:set-in [:new-contact-identity] %])
-                         (dispatch [:set :new-contact-address-error nil]))}]
+      {:error               error
+       :error-color         "#7099e6"
+       :input-style         st/qr-input
+       :value               whisper-identity
+       :accessibility-label :contact-input-field
+       :wrapper-style       button-input
+       :label               (label :t/address)
+       :on-change-text      #(do
+                               (dispatch [:set-in [:new-contact-identity] %])
+                               (dispatch [:set :new-contact-address-error nil]))}]
      [scan-button {:showLabel (zero? (count whisper-identity))
                    :handler   #(dispatch [:scan-qr-code
                                           {:toolbar-title (label :t/new-contact)}

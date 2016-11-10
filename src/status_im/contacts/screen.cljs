@@ -29,13 +29,13 @@
 
 (defn contact-list-toolbar []
   (let [new-contact? (get-in platform-specific [:contacts :new-contact-in-toolbar?])
-        actions      (cond->> [{:image   {:source {:uri :icon_search}
-                                          :style  icon-search}
-                                :handler (fn [])}]
-                              new-contact?
-                              (into [{:image   {:source {:uri :icon_add}
-                                                :style  icon-search}
-                                      :handler #(dispatch [:navigate-to :new-contact])}]))]
+        actions (cond->> [{:image   {:source {:uri :icon_search}
+                                     :style  icon-search}
+                           :handler (fn [])}]
+                         new-contact?
+                         (into [{:image   {:source {:uri :icon_add}
+                                           :style  icon-search}
+                                 :handler #(dispatch [:navigate-to :new-contact])}]))]
     [toolbar {:nav-action       {:image   {:source {:uri :icon_hamburger}
                                            :style  hamburger-icon}
                                  :handler open-drawer}
@@ -64,7 +64,7 @@
       ;; TODO not imlemented: contact more button handler
       (map (fn [contact]
              (let [whisper-identity (:whisper-identity contact)
-                   click-handler    (or click-handler on-press)]
+                   click-handler (or click-handler on-press)]
                ^{:key contact}
                [contact-extended-view contact nil (click-handler whisper-identity) nil]))
            contacts))]
@@ -85,15 +85,16 @@
      {:title       (label :t/new-contact)
       :buttonColor :#9b59b6
       :onPress     #(dispatch [:navigate-to :new-contact])}
-     [ion-icon {:name  :md-create
-                :style create-icon}]]]])
+     [ion-icon {:name                :md-create
+                :accessibility-label :contact-add-button
+                :style               create-icon}]]]])
 
 (defn contact-list []
-  (let [peoples              (subscribe [:get-added-people-with-limit contacts-limit])
-        dapps                (subscribe [:get-added-dapps-with-limit contacts-limit])
-        people-count         (subscribe [:added-people-count])
-        dapps-count          (subscribe [:added-dapps-count])
-        click-handler        (subscribe [:get :contacts-click-handler])
+  (let [peoples (subscribe [:get-added-people-with-limit contacts-limit])
+        dapps (subscribe [:get-added-dapps-with-limit contacts-limit])
+        people-count (subscribe [:added-people-count])
+        dapps-count (subscribe [:added-dapps-count])
+        click-handler (subscribe [:get :contacts-click-handler])
         show-toolbar-shadow? (r/atom false)]
     (fn []
       [view st/contacts-list-container
