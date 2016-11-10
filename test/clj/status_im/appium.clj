@@ -14,7 +14,7 @@
         app          (io/file dir "app-debug.apk")
         capabilities (doto (DesiredCapabilities.)
                        (.setCapability "deviceName" "device")
-                       (.setCapability "platformVersion" "6.0.0")
+                       ;(.setCapability "platformVersion" "6.0.0")
                        (.setCapability "app" (.getAbsolutePath app))
                        (.setCapability "appPackage" "com.statusim")
                        (.setCapability "appActivity" ".MainActivity"))
@@ -28,8 +28,14 @@
 (defn by-xpath [driver xpath]
   (.findElement driver (By/xpath xpath)))
 
+(defn by-name [driver name]
+  (.findElement driver (By/name name)))
+
 (defn elements-by-xpath [driver xpath]
   (.findElements driver (By/xpath xpath)))
+
+(defn element-by-xpath [driver xpath]
+  (.findElement driver (By/xpath xpath)))
 
 (defn by-id [driver id]
   (.findElementByAccessibilityId driver (name id)))
@@ -43,22 +49,26 @@
   (.click (get-element driver id)))
 
 (defn write [driver input-xpath text]
-  (.sendKeys (get-element driver input-xpath) (into-array [text])))
+  (let [element (get-element driver input-xpath)]
+    (.sendKeys element (into-array [text]))))
 
 (defn get-text [driver xpath]
   (.getText (by-xpath driver xpath)))
 
 (defn xpath-by-text [text]
-  (str ".//*[@text='" text "']"))
+  (str "//*[@text=\"" text "\"]"))
 
 (defn click-by-text [driver text]
-  (let [elements (->> (xpath-by-text text)
-                      (elements-by-xpath driver))]
-    (when (pos? (.size elements))
-      (let [element (.get elements 0)]
-        (.click element)))))
+  (let [element (->> (xpath-by-text text)
+                     (element-by-xpath driver))]
+    (when element
+      (.click element))))
 
-(defn contains-text [driver text]
+(defn click-by-name [driver name]
+  (let [element (by-name driver name)]
+    (.click element)))
+
+(defn expect-text [driver text]
   (is (pos? (->> (xpath-by-text text)
                  (elements-by-xpath driver)
                  (.size)))
