@@ -27,28 +27,28 @@
 (register-handler :animate-command-suggestions
   (fn [{chat-id :current-chat-id :as db} _]
     (let [suggestions? (seq (get-in db [:command-suggestions chat-id]))
-          current (get-in db [:animations :command-suggestions-height chat-id])
-          height (if suggestions? middle-height input-height)
-          changed? (if (and suggestions?
-                            (not (nil? current))
-                            (not= input-height current))
-                     identity inc)]
+          current      (get-in db [:animations :command-suggestions-height chat-id])
+          height       (if suggestions? middle-height input-height)
+          changed?     (if (and suggestions?
+                                (not (nil? current))
+                                (not= input-height current))
+                         identity inc)]
       (-> db
           (assoc-in [:animations :command-suggestions-height chat-id] height)
           (update-in [:animations :commands-height-changed] changed?)))))
 
 (defn get-minimum-height
   [{:keys [current-chat-id] :as db}]
-  (let [path [:chats current-chat-id :command-input :command :type]
-        type (get-in db path)
-        command? (= :command type)
-        response? (not command?)
-        errors (get-in db [:validation-errors current-chat-id])
+  (let [path               [:chats current-chat-id :command-input :command :type]
+        type               (get-in db path)
+        command?           (= :command type)
+        response?          (not command?)
+        errors             (get-in db [:validation-errors current-chat-id])
         validation-errors? (seq errors)
-        suggestion? (get-in db [:has-suggestions? current-chat-id])
-        custom-errors (get-in db [:custom-validation-errors current-chat-id])
-        custom-errors? (seq custom-errors)
-        validation-errors?  (or validation-errors? custom-errors?)]
+        suggestion?        (get-in db [:has-suggestions? current-chat-id])
+        custom-errors      (get-in db [:custom-validation-errors current-chat-id])
+        custom-errors?     (seq custom-errors)
+        validation-errors? (or validation-errors? custom-errors?)]
     (cond-> 0
             validation-errors? (+ request-info-height)
             response? (+ minimum-suggestion-height)
@@ -59,14 +59,16 @@
 
 (register-handler :animate-show-response
   ;[(after #(dispatch [:command-edit-mode]))]
-  (fn [{:keys [current-chat-id] :as db}]
+  (fn [{:keys [current-chat-id] :as db} [_ custom-height]]
     (let [suggestions? (get-in db [:has-suggestions? current-chat-id])
           fullscreen?  (get-in db [:chats current-chat-id :command-input :command :fullscreen])
           max-height   (get-in db [:layout-height])
           height       (if suggestions?
                          (if fullscreen?
                            max-height
-                           middle-height)
+                           (if custom-height
+                             (min custom-height middle-height)
+                             (get-minimum-height db)))
                          (get-minimum-height db))]
       (assoc-in db [:animations :to-response-height current-chat-id] height))))
 
@@ -77,35 +79,35 @@
           max-height             (- (get-in db [:layout-height])
                                     (get-in platform-specific [:component-styles :status-bar :default :height])
                                     @input-margin)
-          moving-down? (pos? vy)
-          moving-up? (not moving-down?)
+          moving-down?           (pos? vy)
+          moving-up?             (not moving-down?)
           under-middle-position? (<= current middle-height)
-          over-middle-position? (not under-middle-position?)
-          suggestions (get-in db [suggestions-key current-chat-id])
-          old-fixed (get-in db [:animations height-key current-chat-id])
+          over-middle-position?  (not under-middle-position?)
+          suggestions            (get-in db [suggestions-key current-chat-id])
+          old-fixed              (get-in db [:animations height-key current-chat-id])
 
-          new-fixed (cond (not suggestions)
-                          (minimum db)
+          new-fixed              (cond (not suggestions)
+                                       (minimum db)
 
-                          (and (nil? vy) (nil? current)
-                               (> old-fixed middle-height))
-                          max-height
+                                       (and (nil? vy) (nil? current)
+                                            (> old-fixed middle-height))
+                                       max-height
 
-                          (and (nil? vy) (nil? current)
-                               (< old-fixed middle-height))
-                          (minimum db)
+                                       (and (nil? vy) (nil? current)
+                                            (< old-fixed middle-height))
+                                       (minimum db)
 
-                          (and under-middle-position? moving-up?)
-                          middle-height
+                                       (and under-middle-position? moving-up?)
+                                       middle-height
 
-                          (and over-middle-position? moving-down?)
-                          middle-height
+                                       (and over-middle-position? moving-down?)
+                                       middle-height
 
-                          (and over-middle-position? moving-up?)
-                          max-height
+                                       (and over-middle-position? moving-up?)
+                                       max-height
 
-                          (and under-middle-position? moving-down?)
-                          (minimum db))]
+                                       (and under-middle-position? moving-down?)
+                                       (minimum db))]
       (-> db
           (assoc-in [:animations height-key current-chat-id] new-fixed)
           (update-in [:animations height-signal-key] inc)

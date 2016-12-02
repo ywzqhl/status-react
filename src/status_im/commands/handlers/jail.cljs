@@ -86,8 +86,7 @@
   (u/side-effect! command-hadler!))
 
 (reg-handler :suggestions-handler
-  [(after #(dispatch [:animate-show-response]))
-   (after (print-error-message! "Error on param suggestions"))
+  [(after (print-error-message! "Error on param suggestions"))
    (after (fn [_ [{:keys [command]}]]
             (when (= :on-send (keyword (:suggestions-trigger command)))
               #_(when (:webViewUrl (:returned result))

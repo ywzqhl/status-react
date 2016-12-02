@@ -1157,7 +1157,7 @@ function jsSuggestionsContainerStyle(suggestionsCount) {
         //height: Math.min(150, (56 * suggestionsCount)),
         backgroundColor: "white",
         borderRadius: 5,
-        keyboardShouldPersistTaps: true
+        paddingBottom: 10
     };
 }
 
@@ -1529,7 +1529,7 @@ function jsSuggestions(params, context) {
     }
 
     if (sugestionsMarkup.length > 0) {
-        var view = status.components.scrollView(jsSuggestionsContainerStyle(sugestionsMarkup.length),
+        var view = status.components.view(jsSuggestionsContainerStyle(sugestionsMarkup.length),
             sugestionsMarkup
         );
         return {markup: view};

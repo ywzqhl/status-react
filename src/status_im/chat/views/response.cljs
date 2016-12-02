@@ -146,7 +146,15 @@
 
 (defview response-suggestions-view []
   [suggestions [:get-content-suggestions]]
-  (when (seq suggestions) suggestions))
+  (when (seq suggestions)
+    [scroll-view {:onContentSizeChange       (fn [width, height]
+                                               (let [response-height (+ height
+                                                                        c/input-height
+                                                                        c/suggestions-header-height)]
+                                                 (log/debug "Suggestions height: " response-height)
+                                                 (dispatch [:animate-show-response response-height])))
+                  :keyboardShouldPersistTaps true}
+     suggestions]))
 
 (defn response-view []
   (let [response-height (anim/create-value c/input-height)]
