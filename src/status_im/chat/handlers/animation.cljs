@@ -1,6 +1,6 @@
 (ns status-im.chat.handlers.animation
   (:require [re-frame.core :refer [after dispatch subscribe debug path]]
-            [status-im.utils.handlers :refer [register-handler]]
+            [status-im.utils.handlers :refer [register-handler] :as u]
             [status-im.chat.constants :refer [input-height request-info-height
                                               suggestions-header-height
                                               minimum-command-suggestions-height
@@ -17,10 +17,13 @@
   ([name middleware handler]
    (register-handler name [(path :animations) middleware] handler)))
 
+
+; TODO: review this
 (register-handler :animate-cancel-command
   (after #(dispatch [:text-edit-mode]))
-  (fn [{:keys [current-chat-id] :as db} _]
-    (assoc-in db [:animations :to-response-height current-chat-id] input-height)))
+  (u/side-effect!
+    (fn [{:keys [current-chat-id] :as db} _]
+      (dispatch [:animate-to-response-height current-chat-id input-height]))))
 
 (def response-height (+ input-height response-height-normal))
 
@@ -57,20 +60,6 @@
             ;custom-errors? (+ suggestions-header-height)
             (and command? validation-errors?) (+ suggestions-header-height))))
 
-(register-handler :animate-show-response
-  ;[(after #(dispatch [:command-edit-mode]))]
-  (fn [{:keys [current-chat-id] :as db} [_ custom-height]]
-    (let [suggestions? (get-in db [:has-suggestions? current-chat-id])
-          fullscreen?  (get-in db [:chats current-chat-id :command-input :command :fullscreen])
-          max-height   (get-in db [:layout-height])
-          height       (if suggestions?
-                         (if fullscreen?
-                           max-height
-                           (if custom-height
-                             (min custom-height middle-height)
-                             (get-minimum-height db)))
-                         (get-minimum-height db))]
-      (assoc-in db [:animations :to-response-height current-chat-id] height))))
 
 (defn fix-height
   [height-key height-signal-key suggestions-key minimum]
@@ -126,8 +115,9 @@
               :command-suggestions
               commands-min-height))
 
-(register-handler :fix-response-height
-  (fix-height :to-response-height
-              :response-height-changed
-              :has-suggestions?
-              get-minimum-height))
+(register-handler :initialize-chat-animations
+  (after
+    (fn [db [_ chat-id]]
+      (dispatch [:create-response-height-animation chat-id])))
+  (fn [db [_ chat-id]]
+    (assoc-in db [:chats chat-id :animations-initialized?] true)))

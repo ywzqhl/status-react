@@ -56,59 +56,57 @@
    (when added
      [text {:style st/message-info} (request-info-text name chat-id added)])])
 
-(defn request-info [response-height]
+(defn on-request-info-layout
+  [event]
+  (let [height (int (.. event -nativeEvent -layout -height))]
+    (dispatch [:check-response-height-changed
+               :response-request-info-height
+               (if (> height c/suggestions-header-height)
+                      c/request-info-height
+                      c/suggestions-header-height)])))
+
+(defn request-info [response-height-animation]
   (let [layout-height (subscribe [:max-layout-height :default])
-        pan-responder (resp/pan-responder response-height
-                                          layout-height
-                                          :fix-response-height)
+        pan-responder (resp/pan-responder-response response-height-animation
+                                                   layout-height)
         command       (subscribe [:get-chat-command])]
-    (fn [response-height]
+    (fn [response-height-animation]
       (if (= :response (:type @command))
+          [view (merge (drag/pan-handlers pan-responder)
+                       {:style    (st/request-info (:color @command))
+                        :onLayout on-request-info-layout})
+           [drag-icon]
+           [view st/inner-container
+            [command-icon @command]
+            [info-container @command]
+            [touchable-highlight {:on-press #(dispatch [:start-cancel-command])}
+             [view st/cancel-container
+              [icon :close_white st/cancel-icon]]]]]
         [view (merge (drag/pan-handlers pan-responder)
-                     {:style (st/request-info (:color @command))})
-         [drag-icon]
-         [view st/inner-container
-          [command-icon @command]
-          [info-container @command]
-          [touchable-highlight {:on-press #(dispatch [:start-cancel-command])}
-           [view st/cancel-container
-            [icon :close_white st/cancel-icon]]]]]
-        [view (merge (drag/pan-handlers pan-responder)
-                     {:style ddst/drag-down-touchable})
+                     {:style    ddst/drag-down-touchable
+                      :onLayout on-request-info-layout})
          [icon :drag_down ddst/drag-down-icon]]))))
 
-(defn container-animation-logic [{:keys [to-value val animate?]}]
-  (when-let [to-value @to-value]
-    (let [max-layout-height (subscribe [:max-layout-height :default])
-          to-value          (min to-value (max 0 @max-layout-height))]
-      (when-not (= to-value (.-_value val))
-        (if (or (nil? @animate?) @animate?)
-          (anim/start (anim/timing val {:toValue  to-value
-                                        :duration 300}))
-          (anim/set-value val to-value))))))
 
-(defn container [response-height & children]
+(defn container [& children]
   (let [;; todo to-response-height, cur-response-height must be specific
         ;; for each chat
-        to-response-height (subscribe [:response-height :default])
-        input-margin       (subscribe [:input-margin])
-        changed            (subscribe [:animations :response-height-changed])
-        animate?           (subscribe [:animate?])
-        staged-commands    (subscribe [:get-chat-staged-commands])
-        context            {:to-value to-response-height
-                            :val      response-height
-                            :animate? animate?}
-        on-update          #(container-animation-logic context)]
+        current-response-height (subscribe [:get-current-response-height])
+        input-margin            (subscribe [:input-margin])
+        changed                 (subscribe [:animations :response-height-changed])
+        animate?                (subscribe [:animate?])
+        staged-commands         (subscribe [:get-chat-staged-commands])
+        on-update               #()]
     (r/create-class
       {:component-did-mount
        on-update
        :component-did-update
        on-update
        :reagent-render
-       (fn [response-height & children]
-         @to-response-height @changed
+       (fn [& children]
+         @changed
          (into [animated-view {:style (st/response-view
-                                        response-height
+                                        (or @current-response-height 0)
                                         @input-margin
                                         @staged-commands)}]
                children))})))
@@ -146,20 +144,18 @@
 
 (defview response-suggestions-view []
   [suggestions [:get-content-suggestions]]
-  (when (seq suggestions)
-    [scroll-view {:onContentSizeChange       (fn [width, height]
-                                               (let [response-height (+ height
-                                                                        c/input-height
-                                                                        c/suggestions-header-height)]
-                                                 (log/debug "Suggestions height: " response-height)
-                                                 (dispatch [:animate-show-response response-height])))
-                  :keyboardShouldPersistTaps true}
-     suggestions]))
+  [scroll-view {:onContentSizeChange       (fn [width, height]
+                                             (dispatch [:check-response-height-changed
+                                                        :response-suggestions-height
+                                                        (int height)]))
+                :keyboardShouldPersistTaps true}
+   suggestions])
 
 (defn response-view []
-  (let [response-height (anim/create-value c/input-height)]
-    [container response-height
-     [request-info response-height]
+  (let [response-height-animation (subscribe [:get-response-height-animation])
+        response-height'          (or @response-height-animation (anim/create-value 0))]
+    [container
+     [request-info response-height']
      [suggestions-web-view]
      [response-suggestions-view]
      [cv/validation-messages]

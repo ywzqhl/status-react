@@ -9,7 +9,8 @@
             [status-im.chat.views.plain-message :as plain-message]
             [status-im.chat.views.command :as command]
             [status-im.constants :refer [content-type-status]]
-            [status-im.utils.platform :refer [platform-specific]]))
+            [status-im.utils.platform :refer [platform-specific]]
+            status-im.chat.subs.response))
 
 (register-sub :chat-properties
   (fn [db [_ properties]]
@@ -245,15 +246,10 @@
       (reaction
         (get-in @db [:animations :command-suggestions-height @chat-id])))))
 
-(register-sub :response-height
-  (fn [db [_ status-bar]]
+(register-sub :get-chat-margin-bottom
+  (fn [db _]
     (let [chat-id (subscribe [:get-current-chat-id])]
-      (reaction
-        (min (get-in @db [:animations :to-response-height @chat-id])
-             (if (> (:layout-height @db) 0)
-               (- (:layout-height @db)
-                  (get-in platform-specific [:component-styles :status-bar status-bar :height]))
-               0))))))
+      (reaction (get-in @db [:chats @chat-id :chat-margin-bottom])))))
 
 (register-sub :web-view-url
   (fn [db]

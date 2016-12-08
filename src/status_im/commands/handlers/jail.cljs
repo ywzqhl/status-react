@@ -46,7 +46,7 @@
   (let [{:keys [markup webViewUrl]} (:returned result)
         hiccup (generate-hiccup markup)]
     (-> db
-        (assoc-in [:suggestions chat-id] (generate-hiccup markup))
+        (assoc-in [:suggestions chat-id] hiccup)
         (assoc-in [:web-view-url chat-id] webViewUrl)
         (assoc-in [:has-suggestions? chat-id] (or hiccup webViewUrl)))))
 

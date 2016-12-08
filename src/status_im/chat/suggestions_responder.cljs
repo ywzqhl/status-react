@@ -28,3 +28,13 @@
   (drag/create-pan-responder
     {:on-move    (on-move response-height layout-height)
      :on-release (on-release response-height handler-name)}))
+
+(defn on-release-response []
+  (fn [_ gesture]
+    (when (enough-dy gesture)
+      (dispatch [:release-pan-responder (.-vy gesture)]))))
+
+(defn pan-responder-response [response-height layout-height]
+  (drag/create-pan-responder
+    {:on-move    (on-move response-height layout-height)
+     :on-release (on-release-response)}))

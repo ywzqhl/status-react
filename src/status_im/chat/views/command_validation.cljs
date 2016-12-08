@@ -1,8 +1,10 @@
 (ns status-im.chat.views.command-validation
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [status-im.components.react :as c]
+            [re-frame.core :refer [dispatch]]
             [status-im.chat.styles.command-validation :as st]
-            [status-im.utils.listview :as lw]))
+            [status-im.utils.listview :as lw]
+            [taoensso.timbre :as log]))
 
 (defn message [{:keys [title description]}]
   (c/list-item
@@ -20,7 +22,9 @@
   [validation-messages [:validation-errors]
    custom-errors [:custom-validation-errors]
    command? [:command?]]
-  [c/view
+  [c/view {:onLayout #(dispatch [:check-response-height-changed
+                                 :response-validation-messages-height
+                                 (int (.. % -nativeEvent -layout -height))])}
    (cond (seq custom-errors)
          (vec (concat [c/view] custom-errors))
 

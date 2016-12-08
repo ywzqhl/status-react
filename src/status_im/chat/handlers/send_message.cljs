@@ -209,13 +209,6 @@
     (fn [_ [_ {:keys [chat-id message]}]]
       (messages/save chat-id message))))
 
-(register-handler :clear-response-suggestions
-  (fn [db [_ chat-id]]
-    (-> db
-        (update-in [:suggestions] dissoc chat-id)
-        (update-in [:has-suggestions?] dissoc chat-id)
-        (assoc-in  [:animations :to-response-height chat-id] input-height))))
-
 (register-handler ::send-dapp-message
   (u/side-effect!
     (fn [db [_ chat-id {:keys [content] :as message}]]

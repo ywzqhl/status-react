@@ -16,6 +16,8 @@
                                          default-number-of-messages
                                          console-chat-id
                                          wallet-chat-id]]
+            [status-im.chat.constants :as c]
+            [status-im.utils.platform :refer [platform-specific]]
             [status-im.utils.random :as random]
             [status-im.chat.sign-up :as sign-up-service]
             [status-im.navigation.handlers :as nav]
@@ -38,6 +40,7 @@
             status-im.chat.handlers.webview-bridge
             status-im.chat.handlers.wallet-chat
             status-im.chat.handlers.console
+            status-im.chat.handlers.response
             [taoensso.timbre :as log]
             [tailrecursion.priority-map :refer [priority-map-by]]))
 
@@ -196,8 +199,36 @@
     (assoc-in db [:chats current-chat-id :staged-scroll-view] view)))
 
 (register-handler :set-staged-commands-scroll-height
+  (after
+    (fn [{:keys [current-chat-id] :as db} _]
+      (dispatch [:update-margin-bottom current-chat-id])))
   (fn [{:keys [current-chat-id] :as db} [_ height]]
+    (log/debug "Setting staged height: " height)
     (assoc-in db [:chats current-chat-id :staged-scroll-height] height)))
+
+(register-handler :set-chat-margin-bottom
+  (fn [{:keys [current-chat-id] :as db} [_ height chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (assoc-in db [:chats chat-id :chat-margin-bottom] height))))
+
+(register-handler :update-margin-bottom
+  (u/side-effect!
+    (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+      (let [chat-id              (or chat-id current-chat-id)
+            staged-scroll-height (get-in db [:chats chat-id :staged-scroll-height])
+            response-height      (get-in db [:animations chat-id :current-response-height])
+            max-height           (- (get-in db [:layout-height])
+                                    (get-in platform-specific [:component-styles :status-bar :default :height])
+                                    (get-in platform-specific [:component-styles :toolbar-nav-action :height])
+                                    c/max-input-height)
+            margin-bottom        (max
+                                   (- (min
+                                        response-height
+                                        max-height)
+                                      c/input-height)
+                                   staged-scroll-height)]
+        (log/debug "Updating margin bottom: " (int margin-bottom) max-height)
+        (dispatch [:set-chat-margin-bottom margin-bottom chat-id])))))
 
 (register-handler :staged-commands-scroll-to
   (u/side-effect!
@@ -252,6 +283,11 @@
              (assoc :current-chat-id console-chat-id)))))))
 
 (register-handler :init-console-chat
+  (after
+    (fn [db _]
+      (let [animations-initialized? (get-in db [:chats console-chat-id :animations-initialized?])]
+        (when-not animations-initialized?
+          (dispatch [:initialize-chat-animations console-chat-id])))))
   (fn [db _]
     (init-console-chat db false)))
 
@@ -354,16 +390,21 @@
 
 (defmethod nav/preload-data! :chat
   [{:keys [current-chat-id] :as db} [_ _ id]]
-  (let [chat-id          (or id current-chat-id)
-        messages         (get-in db [:chats chat-id :messages])
-        command?         (= :command (get-in db [:edit-mode chat-id]))
-        db'              (-> db
-                             (assoc :current-chat-id chat-id)
-                             (update-in [:animations :to-response-height chat-id]
-                                        #(if command? % 0)))
-        commands-loaded? (if js/goog.DEBUG
-                           false
-                           (get-in db [:chats chat-id :commands-loaded]))]
+  (let [chat-id                 (or id current-chat-id)
+        messages                (get-in db [:chats chat-id :messages])
+        command?                (= :command (get-in db [:edit-mode chat-id]))
+        db'                     (-> db
+                                    (assoc :current-chat-id chat-id)
+                                    (update-in [:animations :to-response-height chat-id]
+                                               #(if command? % 0)))
+        animations-initialized? (get-in db [:chats chat-id :animations-initialized?])
+        commands-loaded?        (if js/goog.DEBUG
+                                  false
+                                  (get-in db [:chats chat-id :commands-loaded]))]
+    (dispatch [:add-chat-loaded-callback chat-id
+               #(dispatch [:check-autorun])])
+    (when-not animations-initialized?
+      (dispatch [:initialize-chat-animations chat-id]))
     (when (= current-chat-id wallet-chat-id)
       (dispatch [:cancel-command]))
     (dispatch [:load-requests! chat-id])
@@ -552,7 +593,7 @@
        (let [suggestions (get-in db [:has-suggestions? current-chat-id])
              mode        (get-in db [:edit-mode current-chat-id])]
          (when (and (= :command mode) suggestions)
-           (dispatch [:fix-response-height nil nil true])))))
+           (dispatch [:update-response-height])))))
    (after
      (fn [{:keys [current-chat-id] :as db}]
        (let [suggestions (get-in db [:command-suggestions current-chat-id])
@@ -599,11 +640,9 @@
     (fn [{:keys [current-chat-id] :as db}]
       (let [autorun (get-in db [:chats current-chat-id :autorun])]
         (when autorun
-          (am/go
-            ;;todo: find another way to make it work...
-            (a/<! (a/timeout 100))
-            (dispatch [:set-chat-command (keyword autorun)])
-            (dispatch [:animate-command-suggestions])))))))
+          (dispatch [:set-chat-command (keyword autorun)])
+          (dispatch [:animate-command-suggestions])
+          (dispatch [:update-response-height]))))))
 
 (register-handler :inc-clock
   (u/side-effect!

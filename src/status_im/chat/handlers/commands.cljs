@@ -10,7 +10,8 @@
             [status-im.i18n :as i18n]
             [status-im.utils.datetime :as time]
             [status-im.utils.random :as random]
-            [status-im.utils.platform :as platform]))
+            [status-im.utils.platform :as platform]
+            [taoensso.timbre :as log]))
 
 (defn content-by-command
   [{:keys [type]} content]
@@ -147,6 +148,12 @@
           (assoc-in [:disable-staging chat-id] true)))))
 
 (register-handler :unstage-command
+  (after
+    (fn [db [_ staged-command]]
+      (let [staged-commands (get-in db [:chats (:current-chat-id db) :staged-commands])]
+        (log/debug "UNSTAGE_COMMAND: "  (keys staged-commands))
+        (when-not (keys staged-commands)
+          (dispatch [:set-staged-commands-scroll-height 0])))))
   (fn [db [_ staged-command]]
     (commands/unstage-command db staged-command)))
 
@@ -182,7 +189,6 @@
         (dispatch [::set-response-chat-command to-message-id command-key params])))))
 
 (register-handler ::add-validation-errors
-  (after #(dispatch [:fix-response-height]))
   (fn [db [_ chat-id errors]]
     (assoc-in db [:custom-validation-errors chat-id]
               (map cu/generate-hiccup errors))))
@@ -215,7 +221,6 @@
         (handler command-input chat-id params)))))
 
 (register-handler ::set-validation-error
-  (after #(dispatch [:fix-response-height]))
   (fn [db [_ chat-id error]]
     (assoc-in db [:validation-errors chat-id] [error])))
 

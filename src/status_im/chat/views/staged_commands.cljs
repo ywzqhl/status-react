@@ -58,4 +58,5 @@
       [view {:on-layout #(dispatch [:staged-commands-scroll-to (get-height %)])}
        (for [command staged-commands]
          ^{:key command} [staged-command-view command])
-       [view st/staged-commands-bottom]]]]))
+       (when (seq staged-commands)
+         [view st/staged-commands-bottom])]]]))

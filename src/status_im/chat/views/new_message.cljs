@@ -30,7 +30,7 @@
 (defview chat-message-input-view []
   [margin [:input-margin]
    command? [:command?]
-   response-height [:response-height]
+   response-height [:get-response-height]
    parameter [:get-command-parameter]
    type [:command-type]
    suggestions [:get-suggestions]

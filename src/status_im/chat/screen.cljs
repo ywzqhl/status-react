@@ -32,7 +32,8 @@
             [status-im.components.animation :as anim]
             [status-im.components.sync-state.offline :refer [offline-view]]
             [status-im.constants :refer [content-type-status]]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [taoensso.timbre :as log]))
 
 (defn contacts-by-identity [contacts]
   (->> contacts
@@ -181,8 +182,8 @@
        :reagent-render
        (fn [messages]
          @offset
-         (let [staged-scroll-height (subscribe [:get-chat-staged-commands-scroll-height])]
-           [animated-view {:style (st/messages-container @staged-scroll-height messages-offset)}
+         (let [margin-bottom (subscribe [:get-chat-margin-bottom])]
+           [animated-view {:style (st/messages-container (or @margin-bottom 0) messages-offset)}
             messages]))})))
 
 (defn chat []
@@ -193,7 +194,7 @@
         staged-commands   (subscribe [:get-chat-staged-commands])
         layout-height     (subscribe [:get :layout-height])]
     (r/create-class
-      {:component-did-mount #(dispatch [:check-autorun])
+      {:component-did-mount #()
        :reagent-render
        (fn []
          [view {:style    st/chat-view
@@ -206,8 +207,7 @@
            [messages-view @group-chat]]
           ;; todo uncomment this
           #_(when @group-chat [typing-all])
-          (when (seq @staged-commands)
-            [staged-commands-view @staged-commands])
+          [staged-commands-view @staged-commands]
           (when-not @command?
             [suggestion-container])
           [response-view]
