@@ -92,6 +92,7 @@
   (after #(dispatch [:set-soft-input-mode :resize]))
   (u/side-effect!
     (fn [db _]
+      (dispatch [:clear-validation-errors])
       (dispatch [:animate-cancel-command])
       (dispatch [:cancel-command]))))
 
@@ -225,7 +226,7 @@
                                    (- (min
                                         response-height
                                         max-height)
-                                      c/input-height)
+                                      c/max-input-height)
                                    staged-scroll-height)]
         (log/debug "Updating margin bottom: " (int margin-bottom) max-height)
         (dispatch [:set-chat-margin-bottom margin-bottom chat-id])))))

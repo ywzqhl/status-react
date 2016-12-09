@@ -113,7 +113,9 @@
       (let [chat-id        (or chat-id current-chat-id)
             current-height (get-in db [:animations chat-id key-height])]
         (log/debug "Check height changed: " key-height current-height new-height)
-        (when (not= current-height new-height)
+        (when (and (not= current-height new-height)
+                   ; TODO: validation errors onLayout seems to fluctuate by 1 pixel
+                   (> (Math/abs (- current-height new-height)) 1))
           (dispatch [:response-height-changed key-height new-height chat-id])
           (dispatch [:update-response-height chat-id]))))))
 
@@ -122,7 +124,7 @@
   (let [path               [:chats current-chat-id :command-input :command :type]
         type               (get-in db path)
         command?           (= :command type)
-        response?          (not command?)
+        response?          (and type (not command?))
         errors             (get-in db [:validation-errors current-chat-id])
         validation-errors? (seq errors)
         suggestion?        (get-in db [:has-suggestions? current-chat-id])
@@ -132,8 +134,8 @@
     (cond-> 0
             validation-errors? (+ c/request-info-height)
             response? (+ c/minimum-suggestion-height)
-            command? (+ c/input-height)
-            (and suggestion? command?) (+ c/suggestions-header-height)
+            suggestion? (+ c/input-height c/suggestions-header-height)
+            (and command? (not suggestion?)) (+ c/input-height)
             ;custom-errors? (+ suggestions-header-height)
             (and command? validation-errors?) (+ c/suggestions-header-height))))
 
