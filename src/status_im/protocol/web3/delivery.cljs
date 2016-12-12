@@ -17,6 +17,7 @@
   (debug :prepare-message!)
   (let [{:keys [public]} keypair
 
+        _ (log/debug "ALWX keypair" keypair)
         content (:content payload)
         content' (if (and (not to) public content)
                    (e/encrypt public (prn-str content))
@@ -29,6 +30,7 @@
                      prn-str
                      u/from-utf8)]
     (-> message (select-keys [:from :to :topics :ttl])
+        (assoc :signature (u/sign "test" message))
         (assoc :payload payload'))))
 
 (s/def :shh/pending-message
@@ -49,6 +51,7 @@
     (debug :add-pending-message!)
     ;; encryption can take some time, better to run asynchronously
     (let [message' (prepare-message message)]
+      (log/debug "ALWX message ! " message')
       (when (valid? :shh/pending-message message')
         (let [group-id (get-in message [:payload :group-id])
               pending-message {:id            message-id
