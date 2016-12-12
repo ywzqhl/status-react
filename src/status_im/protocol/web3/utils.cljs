@@ -21,8 +21,3 @@
 
 (defn timestamp []
   (to-long (now)))
-
-(defn sign [address message]
-  (let [to-sign (->> (.toString message)
-                     (.sha3 web3))]
-    (.sign (.-eth web3) address to-sign)))

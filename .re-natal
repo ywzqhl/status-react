@@ -31,11 +31,11 @@
     "react-native-drawer-layout",
     "homoglyph-finder",
     "web3",
-    "ethereumjs-util",
     "eccjs",
     "chance",
     "react-native-swiper",
-    "react-native-share"
+    "react-native-share",
+    "elliptic"
   ],
   "imageDirs": [
     "images"
