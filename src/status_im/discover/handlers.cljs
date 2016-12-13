@@ -39,7 +39,9 @@
   (u/side-effect!
     (fn [{:keys [current-public-key web3 current-account-id accounts contacts]}
          [_ status hashtags]]
-      (let [{:keys [name photo-path address]} (get accounts current-account-id)
+      (let [{:keys [name
+                    photo-path
+                    address]} (get accounts current-account-id)
             message-id (random/id)
             message    {:message-id message-id
                         :from       current-public-key
@@ -58,15 +60,16 @@
                                  (protocol/send-status!
                                   {:web3    web3
                                    :message (assoc message :to id)}))
+                               (debug "ALWX SIGN message" message)
                                (dispatch [:status-received message]))))})))))
 
 (register-handler :status-received
   (u/side-effect!
-    (fn [{:keys [discoveries] :as db} [_ {:keys [from payload signature]}]]
+    (fn [{:keys [web3 discoveries] :as db} [_ {:keys [from payload signature]}]]
       (let [{:keys [message-id status hashtags profile]} payload]
         (when (and (not (discoveries/exists? message-id))
                    (not (get discoveries message-id))
-                   (signature-valid? [message-id from status] signature))
+                   (signature-valid? web3 [message-id from status] from signature))
           (let [{:keys [name profile-image]} profile
                 discover {:message-id   message-id
                           :name         name
