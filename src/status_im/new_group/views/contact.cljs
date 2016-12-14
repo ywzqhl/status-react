@@ -11,10 +11,11 @@
     (let [action (if checked? :select-contact :deselect-contact)]
       (dispatch [action whisper-identity]))))
 
-(defview new-group-contact [{:keys [whisper-identity] :as contact}]
+(defview new-group-contact [{:keys [whisper-identity name] :as contact}]
   [checked [:is-contact-selected? whisper-identity]]
   [view st/contact-container
-   [item-checkbox (merge {:on-toggle   (on-toggle whisper-identity)
-                          :checked     checked}
+   [item-checkbox (merge {:on-toggle           (on-toggle whisper-identity)
+                          :accessibility-label (str "new-group-contact-" name)
+                          :checked             checked}
                          st/contact-item-checkbox)]
    [contact-inner-view contact]])

@@ -71,7 +71,8 @@ function validateBalance(params, context) {
             errors: [
                 status.components.validationMessage(
                     "Amount",
-                    "Amount must be specified"
+                    "Amount must be specified",
+                    ""
                 )
             ]
         };
@@ -84,7 +85,8 @@ function validateBalance(params, context) {
             errors: [
                 status.components.validationMessage(
                     "Amount",
-                    "Amount is not valid number"
+                    "Amount is not valid number",
+                    "invalid-amount-error"
                 )
             ]
         };
@@ -98,7 +100,8 @@ function validateBalance(params, context) {
                     "Amount",
                     "Not enough ETH on balance ("
                     + web3.fromWei(balance, "ether")
-                    + " ETH)"
+                    + " ETH)",
+                    "balance-not-enough-error"
                 )
             ]
         };

@@ -103,7 +103,8 @@
                                              (close-drawer)
                                              (dispatch [:navigate-to :accounts])
                                              ;; TODO not implemented
-                                             )}
+                                             )
+                                  :accessibility-label :switch-users}
                [text {:style st/switch-users-text
                       :font  :default}
                 (label :t/switch-users)]]])]]]))))

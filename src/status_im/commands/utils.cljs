@@ -4,7 +4,8 @@
             [status-im.components.react :refer [text scroll-view view web-view
                                                 image touchable-highlight]]
             [re-frame.core :refer [dispatch trim-v debug]]
-            [status-im.utils.handlers :refer [register-handler]]))
+            [status-im.utils.handlers :refer [register-handler]]
+            [taoensso.timbre :as log]))
 
 (def command-prefix "c ")
 
@@ -35,6 +36,7 @@
 
 (defn generate-hiccup [markup]
   ;; todo implement validation
+  (log/debug "Generating hiccup: " markup)
   (w/prewalk
     (fn [el]
       (if (and (vector? el) (string? (first el)))

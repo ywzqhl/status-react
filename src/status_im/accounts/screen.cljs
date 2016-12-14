@@ -49,8 +49,8 @@
 (defview accounts []
   [accounts [:get :accounts]
    stack [:get :navigation-stack]]
-  (let [accounts          (vals accounts)
-        show-back?        (> (count stack) 1)]
+  (let [accounts (vals accounts)
+        show-back? (> (count stack) 1)]
     [view st/screen-container
      [linear-gradient {:colors    ["rgba(182, 116, 241, 1)"
                                    "rgba(107, 147, 231, 1)"
@@ -75,7 +75,8 @@
       [view st/bottom-actions-container
        [view st/recover-button-container
         [touchable-highlight
-         {:on-press #(dispatch [:navigate-to :recover])}
+         {:on-press            #(dispatch [:navigate-to :recover])
+          :accessibility-label :recover-access}
          [view st/recover-button
           [text {:style st/recover-button-text}
            (label :t/recover-access)]]]]

@@ -19,7 +19,8 @@
 (defview account-view [{:keys [address photo-path name] :as account}]
   [current-account [:get-current-account]]
   [touchable-highlight
-   {:onPress #(on-press address)}
+   {:onPress #(on-press address)
+    :accessibility-label (str "login-" address)}
     [view st/account-container
      [view st/photo-container
       [view st/account-photo-container

@@ -40,15 +40,16 @@
                 (label :t/enter-valid-passphrase))]
     [view
      [text-field
-      {:value          passphrase
-       :error          error
-       :error-color    "#7099e6"
-       :label          (label :t/passphrase)
-       :label-color    "#838c93de"
-       :line-color     "#0000001f"
-       :input-style    st/input-style
-       :wrapper-style  (merge button-input st/address-input-wrapper)
-       :on-change-text #(dispatch [:set-in [:recover :passphrase] %])}]]))
+      {:value               passphrase
+       :error               error
+       :error-color         "#7099e6"
+       :accessibility-label :passphrase-input-field
+       :label               (label :t/passphrase)
+       :label-color         "#838c93de"
+       :line-color          "#0000001f"
+       :input-style         st/input-style
+       :wrapper-style       (merge button-input st/address-input-wrapper)
+       :on-change-text      #(dispatch [:set-in [:recover :passphrase] %])}]]))
 
 (defview password-input [password]
   [error [:get-in [:recover :password-error]]]
@@ -58,14 +59,15 @@
                 (label :t/enter-valid-password))]
     [view
      [text-field
-      {:value          password
-       :error          error
-       :error-color    "#7099e6"
-       :label          (label :t/password)
-       :label-color    "#838c93de"
-       :line-color     "#0000001f"
-       :input-style    st/input-style
-       :on-change-text #(dispatch [:set-in [:recover :password] %])}]]))
+      {:value               password
+       :error               error
+       :error-color         "#7099e6"
+       :accessibility-label :password-input-field
+       :label               (label :t/password)
+       :label-color         "#838c93de"
+       :line-color          "#0000001f"
+       :input-style         st/input-style
+       :on-change-text      #(dispatch [:set-in [:recover :password] %])}]]))
 
 (defview recover []
   [{:keys [passphrase password passphrase-error password-error]} [:get :recover]]
@@ -76,31 +78,32 @@
                          "rgba(24, 52, 76, 0.085)"
                          "rgba(24, 52, 76, 0)"]
         _ (log/debug passphrase " - " password)]
-  [view st/screen-container
-   [status-bar {:type :transparent}]
-   [toolbar {:background-color :transparent
-             :nav-action       {:image   {:source {:uri :icon_back}
-                                          :style  icon-back}
-                                :handler #(dispatch [:navigate-back])}
-             :custom-content   [toolbar-title]
-             :actions          [{:image   {:style icon-search}
-                                 :handler #()}]}]
-   [linear-gradient {:locations [0 0.6 1]
-                     :colors    gradient-colors
-                     :style     toolbar-gradient}]
-   [view st/recover-explain-container
-    [text {:style st/recover-explain-text
-           :font  :medium}
-     (label :t/recover-explain)]]
-   [view st/form-container
-    [view st/form-container-inner
-     [passphrase-input (or passphrase "")]
-     [password-input (or password "")]]]
-   [view st/bottom-actions-container
-    [view st/recover-button-container
-     [touchable-highlight
-      {:on-press #(when valid-form?
-                   (dispatch [:recover-account passphrase password]))}
-      [view (st/recover-button valid-form?)
-       [text {:style st/recover-button-text}
-        (label :t/recover)]]]]]]))
+    [view st/screen-container
+     [status-bar {:type :transparent}]
+     [toolbar {:background-color :transparent
+               :nav-action       {:image   {:source {:uri :icon_back}
+                                            :style  icon-back}
+                                  :handler #(dispatch [:navigate-back])}
+               :custom-content   [toolbar-title]
+               :actions          [{:image   {:style icon-search}
+                                   :handler #()}]}]
+     [linear-gradient {:locations [0 0.6 1]
+                       :colors    gradient-colors
+                       :style     toolbar-gradient}]
+     [view st/recover-explain-container
+      [text {:style st/recover-explain-text
+             :font  :medium}
+       (label :t/recover-explain)]]
+     [view st/form-container
+      [view st/form-container-inner
+       [passphrase-input (or passphrase "")]
+       [password-input (or password "")]]]
+     [view st/bottom-actions-container
+      [view st/recover-button-container
+       [touchable-highlight
+        {:on-press            #(when valid-form?
+                                 (dispatch [:recover-account passphrase password]))
+         :accessibility-label :recover-button}
+        [view (st/recover-button valid-form?)
+         [text {:style st/recover-button-text}
+          (label :t/recover)]]]]]]))

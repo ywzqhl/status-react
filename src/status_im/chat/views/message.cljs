@@ -117,6 +117,7 @@
      [view st/command-container
       [view (pill-st/pill command)
        [text {:style pill-st/pill-text
+              :accessibility-label (str "command-message-" name)
               :font  :default}
         (str (if (= :command type) "!" "?") name)]]]
      (when icon-path

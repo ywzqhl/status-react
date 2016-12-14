@@ -137,7 +137,8 @@ status.response({
         if (!/^[\d]{4}$/.test(params.code)) {
             var error = status.components.validationMessage(
                 "Confirmation code",
-                "Wrong format"
+                "Wrong format",
+                "invalid-format-error"
             );
 
             return {errors: [error]}
@@ -167,12 +168,18 @@ status.response({
             currentParameter == "password" &&
             params.password.length < 6
         ) {
-            errorMessages.push("Password should be not less then 6 symbols.");
+            errorMessages.push({
+                description: "Password should be not less then 6 symbols."
+                keyword: "password-too-short-error"
+            });
         }
 
         if (currentParameter == "password-confirmation" &&
             params.password != params["password-confirmation"]) {
-            errorMessages.push("Password confirmation doesn't match password.");
+            errorMessages.push({
+                description: "Password confirmation doesn't match password."
+                keyword: "password-match-error"
+            });
         }
 
         if (errorMessages.length) {
@@ -181,7 +188,8 @@ status.response({
                 errors.push(
                     status.components.validationMessage(
                         "Password",
-                        errorMessages[idx]
+                        errorMessages[idx].description,
+                        errorMessages[idx].keyword
                     )
                 );
             }

@@ -37,19 +37,20 @@
   [new-chat-name [:get :new-chat-name]]
   [view
    [text-field
-    {:error          (cond
-                       (not (s/valid? ::v/not-empty-string new-chat-name))
-                       (label :t/empty-group-chat-name)
-                       (not (s/valid? ::v/not-illegal-name new-chat-name))
-                       (label :t/illegal-group-chat-name))
-     :wrapper-style  st/group-chat-name-wrapper
-     :error-color    "#7099e6"
-     :line-color     "#0000001f"
-     :label-hidden?  true
-     :input-style    st/group-chat-name-input
-     :auto-focus     true
-     :on-change-text #(dispatch [:set :new-chat-name %])
-     :value          new-chat-name}]])
+    {:error               (cond
+                            (not (s/valid? ::v/not-empty-string new-chat-name))
+                            (label :t/empty-group-chat-name)
+                            (not (s/valid? ::v/not-illegal-name new-chat-name))
+                            (label :t/illegal-group-chat-name))
+     :wrapper-style       st/group-chat-name-wrapper
+     :error-color         "#7099e6"
+     :line-color          "#0000001f"
+     :label-hidden?       true
+     :input-style         st/group-chat-name-input
+     :accessibility-label :chat-name-input
+     :auto-focus          true
+     :on-change-text      #(dispatch [:set :new-chat-name %])
+     :value               new-chat-name}]])
 
 (defview new-group []
   [contacts [:all-added-contacts]]
@@ -64,9 +65,9 @@
            :font  :medium}
      (label :t/members-title)]
     #_[touchable-highlight {:on-press (fn [])}
-     [view st/add-container
-      [icon :add_gray st/add-icon]
-      [text {:style st/add-text} (label :t/add-members)]]]
+       [view st/add-container
+        [icon :add_gray st/add-icon]
+        [text {:style st/add-text} (label :t/add-members)]]]
     [list-view
      {:dataSource (to-datasource contacts)
       :renderRow  (fn [row _ _]

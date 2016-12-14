@@ -118,7 +118,7 @@ function webView(url) {
     }];
 }
 
-function validationMessage(titleText, descriptionText) {
+function validationMessage(titleText, descriptionText, keyword) {
     var titleStyle = {
         style: {
             color: "white",
@@ -142,6 +142,7 @@ function validationMessage(titleText, descriptionText) {
             height: 61,
             paddingLeft: 16,
             paddingTop: 14,
+            accessibilityLabel: keyword
         },
         [title, description]
     );

@@ -45,17 +45,18 @@
 (defview password-input [error]
   [view
    [text-field
-    {:editable          true
-     :error             (when (pos? (count error)) (label :t/wrong-password))
-     :error-color       :white
-     :label             (label :t/password)
-     :secure-text-entry true
-     :label-color       "#ffffff80"
-     :line-color        :white
-     :input-style       st/input-style
-     :on-change-text    #(do
-                          (dispatch [:set-in [:login :password] %])
-                          (dispatch [:set-in [:login :error] ""]))}]])
+    {:editable            true
+     :error               (when (pos? (count error)) (label :t/wrong-password))
+     :error-color         :white
+     :accessibility-label :password-input-field
+     :label               (label :t/password)
+     :secure-text-entry   true
+     :label-color         "#ffffff80"
+     :line-color          :white
+     :input-style         st/input-style
+     :on-change-text      #(do
+                             (dispatch [:set-in [:login :password] %])
+                             (dispatch [:set-in [:login :error] ""]))}]])
 
 (defview login []
   [{:keys [address password error]} [:get :login]
@@ -81,7 +82,8 @@
      [password-input error]]]
    [view st/bottom-actions-container
     [view st/connect-button-container
-     [touchable-highlight {:on-press #(dispatch [:login-account address password])}
+     [touchable-highlight {:on-press #(dispatch [:login-account address password])
+                           :accessibility-label :login-button}
       [view st/connect-button
-       [text {:style             st/connect-button-text}
+       [text {:style st/connect-button-text}
         (label :t/connect)]]]]]])

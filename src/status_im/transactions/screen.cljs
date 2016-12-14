@@ -50,12 +50,13 @@
          [transaction-page transaction]))]]
    [view st/form-container
     [text-field
-     {:editable          true
-      :error             (when wrong-password? (label :t/wrong-password))
-      :error-color       :#ffffff80 #_:#7099e6
-      :label             (label :t/password)
-      :secure-text-entry true
-      :label-color       :#ffffff80
-      :line-color        :white
-      :input-style       st/password-style
-      :on-change-text    #(dispatch [:set-in [:confirm-transactions :password] %])}]]])
+     {:editable            true
+      :error               (when wrong-password? (label :t/wrong-password))
+      :error-color         :#ffffff80 #_:#7099e6
+      :accessibility-label :password-input-field
+      :label               (label :t/password)
+      :secure-text-entry   true
+      :label-color         :#ffffff80
+      :line-color          :white
+      :input-style         st/password-style
+      :on-change-text      #(dispatch [:set-in [:confirm-transactions :password] %])}]]])

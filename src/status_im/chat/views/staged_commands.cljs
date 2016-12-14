@@ -26,14 +26,15 @@
       [view {:flex-direction :row}
        [view st/staged-command-info-container
         [view (pill-st/pill command)
-         [text {:style pill-st/pill-text}
+         [text {:style               pill-st/pill-text
+                :accessibility-label (str "staged-command-message-" name)}
           (str
             (if (= :command type) "!" "?")
             name)]]]
        [touchable-highlight {:style   st/staged-command-cancel
                              :onPress #(cancel-command-input staged-command)}
         [view [icon :close_small_gray
-          st/staged-command-cancel-icon]]]]
+               st/staged-command-cancel-icon]]]]
       (if-let [preview (:preview staged-command)]
         preview
         [text {:style st/staged-command-content}

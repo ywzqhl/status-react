@@ -11,6 +11,17 @@
 (def unknown-address
   "Unknown address")
 
+(defaction add-contact
+  [public-key]
+  (click :contact-list-tab)
+  (expect-text "Contacts")
+  (click-by-text "+")
+  (click :contact-add-button)
+  (expect-text "Add new contact")
+  (write :contact-input-field public-key)
+  (click :toolbar-right-action)
+  (expect-text "Unknown"))
+
 (defaction test-input-validation
   [input-id input-text expected-text]
   (write input-id input-text)
@@ -26,6 +37,7 @@
   (click :toolbar-right-action)
   (expect-text "Add new contact")
   ; test unknown address
+  (write :contact-input-field "")
   (write :contact-input-field "1234567890123456789012345678901234567890")
   (click :toolbar-right-action)
   (expect-text unknown-address)
@@ -33,6 +45,7 @@
   (click :toolbar-right-action)
   (expect-text "Add new contact")
   ; test valid-length public key
+  (write :contact-input-field "")
   (write :contact-input-field "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890")
   (click :toolbar-right-action)
   (expect-text "Unknown")
@@ -49,6 +62,7 @@
   []
   (comment))
 
+(comment
 (appium-test contacts-test
   (create-account)
   (click :contact-list-tab)
@@ -58,3 +72,4 @@
   (expect-text "Add new contact")
   (add-new-contact-test)
   (search-contacts-test))
+)

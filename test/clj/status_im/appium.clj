@@ -31,11 +31,14 @@
 (defn by-name [driver name]
   (.findElement driver (By/name name)))
 
+(defn by-class-name [driver class-name]
+  (.findElement driver (By/className class-name)))
+
 (defn elements-by-xpath [driver xpath]
   (.findElements driver (By/xpath xpath)))
 
-(defn element-by-xpath [driver xpath]
-  (.findElement driver (By/xpath xpath)))
+(defn elements-by-class-name [driver class-name]
+  (.findElements driver (By/className class-name)))
 
 (defn by-id [driver id]
   (.findElementByAccessibilityId driver (name id)))
@@ -52,15 +55,22 @@
   (let [element (get-element driver input-xpath)]
     (.sendKeys element (into-array [text]))))
 
+(defn set-value [driver input-xpath text]
+  (let [element (get-element driver input-xpath)]
+    (.replaceValue element text)))
+
 (defn get-text [driver xpath]
   (.getText (by-xpath driver xpath)))
 
 (defn xpath-by-text [text]
   (str "//*[@text=\"" text "\"]"))
 
+(defn click-by-id [driver id]
+  (.click (by-id driver id)))
+
 (defn click-by-text [driver text]
   (let [element (->> (xpath-by-text text)
-                     (element-by-xpath driver))]
+                     (by-xpath driver))]
     (when element
       (.click element))))
 
@@ -73,6 +83,9 @@
                  (elements-by-xpath driver)
                  (.size)))
       (format "Text \"%s\" was not found on screen." text)))
+
+(defn expect-element [driver id]
+  (is (by-id driver id)))
 
 (defn quit [driver]
   (.quit driver))
