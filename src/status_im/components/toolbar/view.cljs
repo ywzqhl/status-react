@@ -13,21 +13,22 @@
             [status-im.components.toolbar.styles :as st]
             [status-im.utils.platform :refer [platform-specific]]))
 
-(defn toolbar [{title                :title
-                nav-action           :nav-action
-                hide-nav?            :hide-nav?
-                actions              :actions
-                custom-action        :custom-action
-                background-color     :background-color
-                custom-content       :custom-content
-                style                :style}]
+(defn toolbar [{title            :title
+                nav-action       :nav-action
+                hide-nav?        :hide-nav?
+                actions          :actions
+                custom-action    :custom-action
+                background-color :background-color
+                custom-content   :custom-content
+                style            :style}]
   (let [style (merge (st/toolbar-wrapper background-color) style)]
     [view {:style style}
      [view st/toolbar
       [view (st/toolbar-nav-actions-container actions)
        (when-not hide-nav?
          (if nav-action
-           [touchable-highlight {:on-press (:handler nav-action)}
+           [touchable-highlight {:on-press            (:handler nav-action)
+                                 :accessibility-label (:accessibility-label nav-action)}
             [view (get-in platform-specific [:component-styles :toolbar-nav-action])
              [image (:image nav-action)]]]
            [touchable-highlight {:on-press            #(dispatch [:navigate-back])

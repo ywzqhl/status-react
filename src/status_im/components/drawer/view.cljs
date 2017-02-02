@@ -31,11 +31,12 @@
 (defn close-drawer []
   (.closeDrawer @drawer-atom))
 
-(defn menu-item [{:keys [name handler]}]
-  [touchable-opacity {:style   st/menu-item-touchable
-                      :onPress (fn []
-                                 (close-drawer)
-                                 (handler))}
+(defn menu-item [{:keys [name handler accessibility-label]}]
+  [touchable-opacity {:style               st/menu-item-touchable
+                      :onPress             (fn []
+                                             (close-drawer)
+                                             (handler))
+                      :accessibility-label accessibility-label}
    [text {:style st/menu-item-text
           :font  :default}
     name]])
@@ -65,16 +66,17 @@
              [ci/chat-icon photo-path {:size 64}]]]
            [view st/name-container
             [text-field
-             {:line-color       :white
-              :focus-line-color :white
-              :placeholder      placeholder
-              :editable         true
-              :input-style      (st/name-input-text (s/valid? ::v/name (or new-name name)))
-              :wrapper-style    st/name-input-wrapper
-              :value            (or new-name name)
-              :on-change-text   #(dispatch [:set-in [:profile-edit :name] %])
-              :on-end-editing   #(when (s/valid? ::v/name new-name)
-                                  (dispatch [:account-update {:name (clean-text new-name)}]))}]]
+             {:line-color          :white
+              :focus-line-color    :white
+              :placeholder         placeholder
+              :accessibility-label :drawer-username-input
+              :editable            true
+              :input-style         (st/name-input-text (s/valid? ::v/name (or new-name name)))
+              :wrapper-style       st/name-input-wrapper
+              :value               (or new-name name)
+              :on-change-text      #(dispatch [:set-in [:profile-edit :name] %])
+              :on-end-editing      #(when (s/valid? ::v/name new-name)
+                                      (dispatch [:account-update {:name (clean-text new-name)}]))}]]
            [view st/status-container
             (if @status-edit?
               [text-input {:style               st/status-input
@@ -101,16 +103,20 @@
                             :number-of-lines 3
                             :status          status}])]
            [view st/menu-items-container
-            [menu-item {:name    (label :t/profile)
-                        :handler #(dispatch [:navigate-to :my-profile])}]
-            [menu-item {:name    (label :t/settings)
-                        :handler (fn []
-                                   ;; TODO not implemented
-                                   )}]
-            [menu-item {:name    (label :t/discover)
-                        :handler #(dispatch [:navigate-to-tab :discover])}]
-            [menu-item {:name    (label :t/contacts)
-                        :handler #(dispatch [:navigate-to-tab :contact-list])}]]
+            [menu-item {:name                (label :t/profile)
+                        :handler             #(dispatch [:navigate-to :my-profile])
+                        :accessibility-label :drawer-profile-button}]
+            [menu-item {:name                (label :t/settings)
+                        :handler             (fn []
+                                               ;; TODO not implemented
+                                               )
+                        :accessibility-label :drawer-settings-button}]
+            [menu-item {:name                (label :t/discover)
+                        :handler             #(dispatch [:navigate-to-tab :discover])
+                        :accessibility-label :drawer-discover-button}]
+            [menu-item {:name                (label :t/contacts)
+                        :handler             #(dispatch [:navigate-to-tab :contact-list])
+                        :accessibility-label :drawer-contacts-button}]]
            (when (zero? @keyboard-height)
              [text {:style st/feedback
                     :font  :default} (label :t/feedback)])
@@ -118,7 +124,8 @@
              [view st/switch-users-container
               [touchable-opacity {:onPress (fn []
                                              (close-drawer)
-                                             (dispatch [:navigate-to :accounts]))}
+                                             (dispatch [:navigate-to :accounts]))
+                                  :accessibility-label :switch-user-button}
                [text {:style st/switch-users-text
                       :font  :default}
                 (label :t/switch-users)]]])]]]))))

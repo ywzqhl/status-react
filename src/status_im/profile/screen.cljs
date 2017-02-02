@@ -35,29 +35,50 @@
             [status-im.i18n :refer [label
                                     get-contact-translated]]))
 
+(defn profile-save-button [account]
+  (let [edit-data-valid? (s/valid? ::v/profile account)]
+    [touchable-highlight {:style               st/actions-btn-touchable
+                          :accessibility-label :profile-save-button
+                          :on-press            #(when edit-data-valid?
+                                                  (dismiss-keyboard!)
+                                                  (dispatch [:check-status-change (:status account)])
+                                                  (dispatch [:account-update account])
+                                                  (dispatch [:set-in [:profile-edit :edit?] false]))}
+     [view st/actions-btn-container
+      [oct-icon {:name  :check
+                 :style (st/ok-btn-icon edit-data-valid?)}]]]))
+
+(defn profile-edit-button [account]
+  [touchable-highlight {:style               st/actions-btn-touchable
+                        :accessibility-label :profile-edit-button
+                        :on-press            #(dispatch [:set :profile-edit (merge account {:edit? true})])}
+   [view st/actions-btn-container
+    [icon :dots st/edit-btn-icon]]])
+
 (defn toolbar [{:keys [account edit?]}]
-  (let [profile-edit-data-valid? (s/valid? ::v/profile account)]
-    [view
-     [touchable-highlight {:style    st/back-btn-touchable
-                           :on-press (fn []
-                                       (dispatch [:set-in [:profile-edit :edit?] false])
-                                       (dispatch [:navigate-back]))}
-      [view st/back-btn-container
-       [icon :back st/back-btn-icon]]]
-     [touchable-highlight {:style    st/actions-btn-touchable
-                           :on-press (fn []
-                                       (if edit?
-                                         (when profile-edit-data-valid?
-                                           (dismiss-keyboard!)
-                                           (dispatch [:check-status-change (:status account)])
-                                           (dispatch [:account-update account])
-                                           (dispatch [:set-in [:profile-edit :edit?] false]))
-                                         (dispatch [:set :profile-edit (merge account {:edit? true})])))}
-      [view st/actions-btn-container
-       (if edit?
-         [oct-icon {:name  :check
-                    :style (st/ok-btn-icon profile-edit-data-valid?)}]
-         [icon :dots st/edit-btn-icon])]]]))
+  [view
+   [touchable-highlight {:style               st/back-btn-touchable
+                         :accessibility-label :profile-back-button
+                         :on-press            (fn []
+                                                (dispatch [:set-in [:profile-edit :edit?] false])
+                                                (dispatch [:navigate-back]))}
+    [view st/back-btn-container
+     [icon :back st/back-btn-icon]]]
+   (if edit?
+     [profile-save-button account]
+     [profile-edit-button account])])
+
+(defn user-photo [name photo-path edit?]
+  (if edit?
+    [touchable-highlight {:on-press #(let [list-selection-fn (:list-selection-fn platform-specific)]
+                                       (dispatch [:open-image-source-selector list-selection-fn]))}
+     [view
+      [my-profile-icon {:edit?   true
+                        :account {:photo-path photo-path
+                                  :name       name}}]]]
+    [my-profile-icon {:edit? false
+                      :account {:photo-path photo-path
+                                :name       name}}]))
 
 (defn status-image-view [_]
   (let [component         (r/current-component)
@@ -76,26 +97,16 @@
              edit?                :edit?}]
          [view st/status-block
           [view st/user-photo-container
-
-           (if edit?
-             [touchable-highlight {:on-press (fn []
-                                               (let [list-selection-fn (:list-selection-fn platform-specific)]
-                                                 (dispatch [:open-image-source-selector list-selection-fn])))}
-              [view
-               [my-profile-icon {:account {:photo-path photo-path
-                                           :name       name}
-                                 :edit?   edit?}]]]
-             [my-profile-icon {:account {:photo-path photo-path
-                                         :name       name}
-                               :edit?   edit?}])]
+           [user-photo name photo-path edit?]]
           [text-field
-           {:line-color       :white
-            :focus-line-color :white
-            :editable         edit?
-            :input-style      (st/username-input edit? (s/valid? ::v/name name))
-            :wrapper-style    st/username-wrapper
-            :value            (get-contact-translated whisper-identity :name name)
-            :on-change-text   #(dispatch [:set-in [:profile-edit :name] %])}]
+           {:line-color          :white
+            :focus-line-color    :white
+            :editable            edit?
+            :accessibility-label :profile-username-input
+            :input-style         (st/username-input edit? (s/valid? ::v/name name))
+            :wrapper-style       st/username-wrapper
+            :value               (get-contact-translated whisper-identity :name name)
+            :on-change-text      #(dispatch [:set-in [:profile-edit :name] %])}]
           (if (or edit? @just-opened?)
             [text-input {:ref                    #(reset! input-ref %)
                          :style                  (st/status-input (:height (r/state component)))
