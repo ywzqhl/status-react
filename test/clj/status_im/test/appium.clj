@@ -41,6 +41,9 @@
 (defn click [driver id]
   (.click (get-element driver id)))
 
+(defn clear [driver id]
+  (.clear (get-element driver id)))
+
 (defn write [driver input-xpath text]
   (.sendKeys (get-element driver input-xpath) (into-array [text])))
 
@@ -49,6 +52,9 @@
 
 (defn xpath-by-text [text]
   (str ".//*[@text=\"" text "\"]"))
+
+(defn get-element-by-text [driver text]
+  (get-element driver (xpath-by-text text)))
 
 (defn click-by-text [driver text]
   (let [elements (->> (xpath-by-text text)
