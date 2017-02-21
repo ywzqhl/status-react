@@ -15,3 +15,7 @@
                (slurp "resources/web3.0_16_0.min.js")
                "}"))
 (def web3-init (slurp "resources/web3_init.js"))
+
+
+(def solc-soljson (slurp "resources/solc/soljson.js"))
+(def solc-index (slurp "resources/solc/index.js"))
