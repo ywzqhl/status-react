@@ -310,6 +310,13 @@
             (dispatch [:set-chat-ui-props :sending-disabled? true])
             (dispatch [:validate-command])))))))
 
-(defn fib-lazy
-  ([] (fib-lazy 0 1))
-  ([x1 x2] (cons x1 (lazy-seq (fib-lazy x2 (+ x1 x2))))))
+(register-handler :execute-command-immediately
+  (u/side-effect!
+    (fn [_ [_ {command-name :name :as command}]]
+      (case (keyword command-name)
+        :grant-permissions
+        (dispatch [:request-permissions
+                   [:read-external-storage :write-external-storage]
+                   #(dispatch [:initialize-geth])
+                   #(dispatch [:account-generation-failure-message])])
+        (log/debug "ignoring command: " command)))))

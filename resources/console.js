@@ -1955,6 +1955,14 @@ status.response({
     }
 });
 
+status.response({
+  name: "grant-permissions",
+  color: "#7099e6",
+  description: "Grant permissions",
+  icon: "lock_white",
+  executeImmediately: true
+});
+
 status.registerFunction("message-suggestions", function(params, context) {
     return jsSuggestions({code: params.message}, context);
 });

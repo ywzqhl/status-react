@@ -106,7 +106,7 @@ android {
     defaultConfig {
         applicationId "im.status.ethereum"
         minSdkVersion 18
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode getVersionCode()
         versionName getVersionName()
         ndk {
@@ -135,11 +135,13 @@ android {
     buildTypes {
         debug {
             versionNameSuffix "-SNAPSHOT"
+            manifestPlaceholders = [excludeSystemAlertWindowPermission: "false"]
         }
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             signingConfig signingConfigs.release
+            manifestPlaceholders = [excludeSystemAlertWindowPermission: "true"]
         }
     }
     // applicationVariants are e.g. debug, release

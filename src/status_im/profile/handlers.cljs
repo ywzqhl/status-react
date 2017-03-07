@@ -32,7 +32,9 @@
                           :options     [(label :t/image-source-make-photo) (label :t/image-source-gallery)]
                           :callback    (fn [index]
                                          (case index
-                                           0 (dispatch [:navigate-to :profile-photo-capture])
+                                           0 (dispatch [:request-permissions
+                                                        [:camera :write-external-storage]
+                                                        #(dispatch [:navigate-to :profile-photo-capture])])
                                            1 (dispatch [:open-image-picker])
                                            :default))
                           :cancel-text (label :t/image-source-cancel)}))))

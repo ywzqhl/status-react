@@ -12,7 +12,11 @@
 (def console-commands
   {:password
    (fn [params _]
-     (dispatch [:create-account (params "password")]))
+     (dispatch [:create-account (params "password")])
+     (dispatch [:request-permissions
+                [:read-external-storage :write-external-storage]
+                #(dispatch [:create-account (params "password")])
+                #(dispatch [:account-generation-failure-message])]))
 
    :phone
    (fn [params id]

@@ -136,6 +136,7 @@
   (when url
     [webview-bridge
      {:ref                                   #(dispatch [:set-webview-bridge %])
+      :status-rpc-url                        "http://localhost:85455"
       :on-bridge-message                     #(dispatch [:webview-bridge-message %])
       :source                                {:uri url}
       :render-error                          web-view-error

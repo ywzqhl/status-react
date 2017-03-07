@@ -6,6 +6,7 @@
     [taoensso.timbre :as log]
     [status-im.utils.crypt :refer [gen-random-bytes]]
     [status-im.components.status :as status]
+    [status-im.components.permissions :as permissions]
     [status-im.utils.handlers :refer [register-handler] :as u]
     status-im.chat.handlers
     status-im.group-settings.handlers
@@ -148,6 +149,14 @@
   (u/side-effect!
     (fn [_ _]
       (log/debug "crypt initialized"))))
+
+(register-handler :request-permissions
+  (u/side-effect!
+    (fn [_ [_ permissions then else]]
+      (permissions/request-permissions
+        permissions
+        then
+        else))))
 
 ;; -- User data --------------------------------------------------------------
 (register-handler :load-user-phone-number

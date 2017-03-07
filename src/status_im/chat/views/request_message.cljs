@@ -10,7 +10,8 @@
             [status-im.chat.styles.message :as st]
             [status-im.accessibility-ids :as id]
             [status-im.models.commands :refer [parse-command-request]]
-            [status-im.components.animation :as anim]))
+            [status-im.components.animation :as anim]
+            [taoensso.timbre :as log]))
 
 (def request-message-icon-scale-delay 600)
 
@@ -55,11 +56,13 @@
        :component-will-unmount
        #(reset! loop? false)
        :reagent-render
-       (fn [message-id {command-icon :icon :as command} status-initialized?]
+       (fn [message-id {:keys [execute-immediately?] command-icon :icon :as command} status-initialized?]
          (when command
            [touchable-highlight
-            {:on-press            (when (and (not @answered?) status-initialized?)
-                                    #(set-chat-command message-id command))
+            {:on-press            (if execute-immediately?
+                                    #(dispatch [:execute-command-immediately command])
+                                    (when (and (not @answered?) status-initialized?)
+                                      #(set-chat-command message-id command)))
              :style               (st/command-request-image-touchable top-offset?)
              :accessibility-label (id/chat-request-message-button (:name command))}
             [animated-view {:style (st/command-request-image-view command scale-anim-val)}

@@ -36,6 +36,7 @@ Command.prototype.create = function (com) {
     this["suggestions-trigger"] = com.suggestionsTrigger || "on-change";
     this.fullscreen = com.fullscreen;
     this.request = com.request;
+    this["execute-immediately?"] = com.executeImmediately;
     this.addToCatalog();
 
     return this;
