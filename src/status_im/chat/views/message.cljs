@@ -41,6 +41,12 @@
 
 (def window-width (:width (get-dimensions "window")))
 
+(defview message-author-name [{:keys [outgoing from] :as message}]
+  [current-account [:get-current-account]
+   incoming-name [:contact-name-by-identity from]]
+  (let [name (if outgoing (:name current-account) incoming-name)]
+    [text {:style st/author} name]))
+
 (defn message-content-status [_]
   (let [{:keys [chat-id group-chat name color]} (subscribe [:chat-properties [:chat-id :group-chat :name :color]])
         members (subscribe [:current-chat-contacts])]
@@ -143,22 +149,10 @@
                        :current-chat-id current-chat-id}]]))
 
 (defn message-view
-  [{:keys [username same-author index] :as message} content]
+  [{:keys [same-author index] :as message} content]
   [view (st/message-view message)
-   (when (and username (or (= 1 index) (not same-author)))
-     [text {:style st/author} username])
+   [message-author-name message]
    content])
-
-(defmulti message-content (fn [_ message _]
-                            (message :content-type)))
-
-(defmethod message-content content-type-command-request
-  [wrapper message]
-  [wrapper message [message-content-command-request message]])
-
-(defmethod message-content c/content-type-wallet-request
-  [wrapper message]
-  [wrapper message [message-content-command-request message]])
 
 (def replacements
   {"\\*[^*]+\\*" {:font-weight :bold}
@@ -211,6 +205,16 @@
        [text {:style (st/text-message message)
               :font  :default}
         (parse-text content)]))])
+
+(defmulti message-content (fn [_ message _] (message :content-type)))
+
+(defmethod message-content content-type-command-request
+  [wrapper message]
+  [wrapper message [message-content-command-request message]])
+
+(defmethod message-content c/content-type-wallet-request
+  [wrapper message]
+  [wrapper message [message-content-command-request message]])
 
 (defmethod message-content text-content-type
   [wrapper message]
@@ -312,32 +316,20 @@
                            photo-path)}
            :style  st/photo}]])
 
-(defn incoming-group-message-body
-  [{:keys [selected same-author from index] :as message} content]
+(defn message-body
+  [{:keys [outgoing message-type same-author from index] :as message} content]
   (let [delivery-status :seen-by-everyone]
     [view st/group-message-wrapper
-     (when selected
-       [text {:style st/selected-message
-              :font  :default}
-        "Mar 7th, 15:22"])
-     [view (st/incoming-group-message-body-st message)
+     [view (st/message-body message)
       [view st/message-author
-       (when (or (= index 1)
-                 (not same-author)) [member-photo from])]
-      [view st/group-message-view
+       (when (or (= index 1) (not same-author))
+         [member-photo from])]
+      [view (st/group-message-view message)
        content
-       ;; TODO show for last or selected
-       (when (and selected delivery-status)
-         [message-delivery-status message])]]]))
-
-(defn message-body
-  [{:keys [outgoing message-type] :as message} content]
-  [view (st/message-body message)
-   content
-   (when outgoing
-     (if (= (keyword message-type) :group-user-message)
-       [group-message-delivery-status message]
-       [message-delivery-status message]))])
+       (when outgoing
+         (if (= (keyword message-type) :group-user-message)
+           [group-message-delivery-status message]
+           [message-delivery-status message]))]]]))
 
 (defn message-container-animation-logic [{:keys [to-value val callback]}]
   (fn [_]
@@ -399,8 +391,5 @@
                                                  #(share content (label :t/message)))}
            [view
             (let [incoming-group (and group-chat (not outgoing))]
-              [message-content
-               (if incoming-group
-                 incoming-group-message-body
-                 message-body)
-               (merge message {:incoming-group incoming-group})])]]])})))
+              [message-content message-body (merge message
+                                                   {:incoming-group incoming-group})])]]])})))

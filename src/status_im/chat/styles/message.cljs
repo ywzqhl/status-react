@@ -5,12 +5,13 @@
                                                  selected-message-color
                                                  text1-color
                                                  text2-color
-                                                 color-gray]]
+                                                 color-gray
+                                                 color-gray4]]
             [status-im.constants :refer [text-content-type
                                          content-type-command]]))
 
 (def style-message-text
-  {:fontSize   14
+  {:fontSize   15
    :lineHeight 21
    :color      text1-color})
 
@@ -47,24 +48,15 @@
 
 (defn message-body
   [{:keys [outgoing] :as message}]
-  (let [align (if outgoing :flex-end :flex-start)]
+  (let [align     (if outgoing :flex-end :flex-start)
+        direction (if outgoing :row-reverse :row)]
     (merge message-body-base
-           {:flexDirection :column
+           {:flexDirection direction
             :width         260
             :paddingTop    (message-padding-top message)
             :alignSelf     align
             :alignItems    align}
            (last-message-padding message))))
-
-(defn incoming-group-message-body-st
-  [message]
-  (merge message-body-base
-         {:flexDirection :row
-          :alignSelf     :flex-start
-          :marginTop     (message-padding-top message)
-          :paddingRight  8
-          :paddingLeft   8}
-         (last-message-padding message)))
 
 (def selected-message
   {:marginTop  18
@@ -75,13 +67,17 @@
 (def group-message-wrapper
   {:flexDirection :column})
 
-(def group-message-view
-  {:flexDirection :column
-   :width         260
-   :paddingLeft   8
-   :alignItems    :flex-start})
+(defn group-message-view
+  [{:keys [outgoing] :as message}]
+  (let [align (if outgoing :flex-end :flex-start)]
+    {:flexDirection :column
+     :width         260
+     :padding-left    8
+     :padding-right   8
+     :alignItems    align}))
 
-(def message-author {:width 24})
+(def message-author {:width 24
+                     :alignSelf :flex-start})
 
 (def photo-view {:borderRadius 12})
 (def photo
@@ -91,7 +87,8 @@
 
 (def delivery-view
   {:flexDirection :row
-   :marginTop     2})
+   :marginTop     2
+   :opacity       0.5})
 
 (def delivery-image
   {:marginTop 6
@@ -99,35 +96,27 @@
    :height    7})
 
 (def delivery-text
-  {:fontSize   12
-   :color      text2-color
+  {:fontSize   13
+   :color      color-gray4
    :marginLeft 5})
 
 (defn text-message
   [{:keys [outgoing group-chat incoming-group]}]
   (merge style-message-text
-         {:marginTop (if incoming-group
-                       4
-                       0)}
-         (when (and outgoing group-chat)
-           {:color color-white})))
+         {:marginTop (if incoming-group 4 0)}))
 
 (defn message-view
   [{:keys [content-type outgoing group-chat selected]}]
-  (merge {:borderRadius    14
+  (merge {:borderRadius    4
           :padding         12
           :backgroundColor color-white}
          (when (= content-type content-type-command)
            {:paddingTop    10
-            :paddingBottom 14})
-         (if outgoing
-           (when (and group-chat (= content-type text-content-type))
-             {:backgroundColor color-blue})
-           (when selected
-             {:backgroundColor selected-message-color}))))
+            :paddingBottom 14})))
 
 (def author
-  {:color color-gray})
+  {:font-size 13
+   :color color-gray4})
 
 (def comand-request-view
   {:paddingRight 16})
@@ -181,6 +170,7 @@
 
 (def command-container
   {:flexDirection :row
+   :margin-top    4
    :marginRight   32})
 
 (def command-image
