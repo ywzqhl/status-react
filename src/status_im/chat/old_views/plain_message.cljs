@@ -1,4 +1,4 @@
-(ns status-im.chat.views.plain-message
+(ns status-im.chat.old-views.plain-message
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]
@@ -9,19 +9,9 @@
                                                 touchable-highlight
                                                 dismiss-keyboard!]]
             [status-im.components.animation :as anim]
-            [status-im.chat.styles.plain-message :as st]
+            [status-im.chat.old-styles.plain-message :as st]
             [status-im.chat.constants :as chat-consts]
             [status-im.constants :refer [response-input-hiding-duration]]))
-
-(defn set-input-message [message]
-  (dispatch [:set-chat-input-text message]))
-
-(defn send []
-  (dispatch [:send-chat-message]))
-
-(defn message-valid? [ message]
-  (and (pos? (count message))
-       (not= chat-consts/command-char message)))
 
 (defn button-animation-logic [{:keys [command? val]}]
   (fn [_]

@@ -1,4 +1,4 @@
-(ns status-im.chat.views.request-message
+(ns status-im.chat.views.message.request-message
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]
             [status-im.components.react :refer [view
@@ -7,7 +7,7 @@
                                                 image
                                                 icon
                                                 touchable-highlight]]
-            [status-im.chat.styles.message :as st]
+            [status-im.chat.styles.message.message :as st]
             [status-im.accessibility-ids :as id]
             [status-im.models.commands :refer [parse-command-request]]
             [status-im.components.animation :as anim]))

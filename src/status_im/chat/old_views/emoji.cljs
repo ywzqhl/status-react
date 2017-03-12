@@ -1,11 +1,11 @@
-(ns status-im.chat.views.emoji
+(ns status-im.chat.old-views.emoji
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [re-frame.core :refer [subscribe dispatch]]
             [status-im.components.react :refer [view
                                                 text
                                                 icon
                                                 emoji-picker]]
-            [status-im.chat.styles.emoji :as st]
+            [status-im.chat.old-styles.emoji :as st]
             [status-im.i18n :refer [label]]))
 
 (defview emoji-view []

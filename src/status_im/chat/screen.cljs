@@ -19,15 +19,16 @@
             [status-im.utils.platform :refer [platform-specific]]
             [status-im.components.invertible-scroll-view :refer [invertible-scroll-view]]
             [status-im.components.toolbar.view :refer [toolbar]]
-            [status-im.chat.views.message :refer [chat-message]]
-            [status-im.chat.views.datemark :refer [chat-datemark]]
-            [status-im.chat.views.response :refer [response-view]]
-            [status-im.chat.views.new-message :refer [chat-message-input-view]]
-            [status-im.chat.views.actions :refer [actions-view]]
-            [status-im.chat.views.emoji :refer [emoji-view]]
-            [status-im.chat.views.bottom-info :refer [bottom-info-view]]
             [status-im.chat.views.toolbar-content :refer [toolbar-content-view]]
-            [status-im.chat.views.suggestions :refer [suggestion-container]]
+            [status-im.chat.views.message.message :refer [chat-message]]
+            [status-im.chat.views.message.datemark :refer [chat-datemark]]
+            [status-im.chat.views.input.input :as input]
+            #_[status-im.chat.old-views.new-message :refer [chat-message-input-view]]
+            #_[status-im.chat.old-views.response :refer [response-view]]
+            #_[status-im.chat.old-views.actions :refer [actions-view]]
+            #_[status-im.chat.old-views.emoji :refer [emoji-view]]
+            #_[status-im.chat.old-views.bottom-info :refer [bottom-info-view]]
+            #_[status-im.chat.old-views.suggestions :refer [suggestion-container]]
             [status-im.chat.constants :as const]
             [status-im.i18n :refer [label label-pluralize]]
             [status-im.components.animation :as anim]
@@ -201,17 +202,18 @@
    [chat-toolbar]
    [messages-container
     [messages-view group-chat]]
-   ;; todo uncomment this
+   [input/container]
+   #_[chat-message-input-view]
    #_(when @group-chat [typing-all])
-   (when-not command?
-     [suggestion-container])
-   [response-view]
-   (when show-emoji?
+   #_(when-not command?
+       [suggestion-container])
+   #_[response-view]
+   #_(when show-emoji?
      [emoji-view])
-   [chat-message-input-view]
-   (when show-actions?
+   #_[chat-message-input-view]
+   #_(when show-actions?
      [actions-view])
-   (when show-bottom-info?
+   #_(when show-bottom-info?
      [bottom-info-view])
    [offline-view {:top (get-in platform-specific
                                [:component-styles :status-bar :default :height])}]])

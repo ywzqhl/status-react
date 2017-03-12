@@ -1,8 +1,9 @@
-(ns status-im.chat.views.response
+(ns status-im.chat.old-views.response
   (:require-macros [reagent.ratom :refer [reaction]]
                    [status-im.utils.views :refer [defview]])
   (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]
+            [clojure.string :as s]
             [status-im.components.react :refer [view
                                                 animated-view
                                                 icon
@@ -11,23 +12,22 @@
                                                 touchable-highlight
                                                 web-view
                                                 scroll-view]]
-            [status-im.components.drag-drop :as drag]
-            [status-im.chat.styles.response :as st]
-            [status-im.chat.styles.dragdown :as ddst]
             [status-im.components.animation :as anim]
+            [status-im.components.drag-drop :as drag]
+            [status-im.components.webview-bridge :refer [webview-bridge]]
             [status-im.chat.suggestions-responder :as resp]
             [status-im.chat.constants :as c]
-            [status-im.chat.views.command-validation :as cv]
-            [status-im.utils.platform :refer [ios?]]
-            [status-im.components.webview-bridge :refer [webview-bridge]]
-            [status-im.i18n :refer [label]]
-            [status-im.accessibility-ids :as id]
+            [status-im.chat.old-views.command-validation :as cv]
+            [status-im.chat.old-styles.response :as st]
+            [status-im.chat.old-styles.dragdown :as ddst]
             [status-im.utils.datetime :as dt]
-            [status-im.utils.name :refer [shortened-name]]
             [status-im.utils.js-resources :as js-res]
+            [status-im.utils.name :refer [shortened-name]]
+            [status-im.utils.platform :refer [ios?]]
+            [status-im.accessibility-ids :as id]
             [status-im.commands.utils :as cu]
-            [taoensso.timbre :as log]
-            [clojure.string :as s]))
+            [status-im.i18n :refer [label]]
+            [taoensso.timbre :as log]))
 
 (defn drag-icon []
   [view st/drag-container

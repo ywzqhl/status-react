@@ -1,4 +1,4 @@
-(ns status-im.chat.views.suggestions
+(ns status-im.chat.old-views.suggestions
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [re-frame.core :refer [subscribe dispatch]]
             [status-im.components.react :refer [view
@@ -11,8 +11,8 @@
                                                 list-item
                                                 animated-view]]
             [status-im.utils.listview :refer [to-datasource]]
-            [status-im.chat.styles.suggestions :as st]
-            [status-im.chat.styles.dragdown :as ddst]
+            [status-im.chat.old-styles.suggestions :as st]
+            [status-im.chat.old-styles.dragdown :as ddst]
             [reagent.core :as r]
             [status-im.components.animation :as anim]
             [status-im.components.drag-drop :as drag]

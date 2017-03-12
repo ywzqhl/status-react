@@ -1,7 +1,7 @@
-(ns status-im.chat.views.command-validation
+(ns status-im.chat.old-views.command-validation
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [status-im.components.react :as c]
-            [status-im.chat.styles.command-validation :as st]
+            [status-im.chat.old-styles.command-validation :as st]
             [status-im.utils.listview :as lw]))
 
 (defn message [{:keys [title description]}]

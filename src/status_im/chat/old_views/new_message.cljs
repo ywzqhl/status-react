@@ -1,13 +1,13 @@
-(ns status-im.chat.views.new-message
+(ns status-im.chat.old-views.new-message
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require
     [re-frame.core :refer [dispatch subscribe]]
     [status-im.components.react :refer [view
                                         scroll-view]]
-    [status-im.chat.views.message-input :refer [plain-message-input-view]]
+    [status-im.chat.old-views.message-input :refer [plain-message-input-view]]
     [status-im.chat.constants :refer [input-height]]
     [status-im.utils.platform :refer [platform-specific]]
-    [status-im.chat.styles.message :as st]))
+    [status-im.chat.styles.message.message :as st]))
 
 (defn get-height [event]
   (.-height (.-layout (.-nativeEvent event))))

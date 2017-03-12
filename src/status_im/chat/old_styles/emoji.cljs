@@ -1,4 +1,4 @@
-(ns status-im.chat.styles.emoji
+(ns status-im.chat.old-styles.emoji
   (:require [status-im.components.styles :refer [color-white]]
             [status-im.chat.constants :refer [emoji-container-height]]))
 

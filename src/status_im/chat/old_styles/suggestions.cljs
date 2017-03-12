@@ -1,4 +1,4 @@
-(ns status-im.chat.styles.suggestions
+(ns status-im.chat.old-styles.suggestions
   (:require [status-im.components.styles :refer [color-white
                                                  color-black
                                                  color-gray

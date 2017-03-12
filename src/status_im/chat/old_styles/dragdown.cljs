@@ -1,4 +1,4 @@
-(ns status-im.chat.styles.dragdown
+(ns status-im.chat.old-styles.dragdown
   (:require [status-im.components.styles :refer [color-white]]))
 
 (def drag-down-touchable

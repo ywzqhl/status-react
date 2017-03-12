@@ -1,4 +1,4 @@
-(ns status-im.chat.styles.command-validation
+(ns status-im.chat.old-styles.command-validation
   (:require [status-im.chat.constants :as constants]))
 
 (def messages-container

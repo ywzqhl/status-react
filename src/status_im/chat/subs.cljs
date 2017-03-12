@@ -1,14 +1,13 @@
 (ns status-im.chat.subs
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :refer [register-sub dispatch subscribe path]]
-            [status-im.models.commands :as commands]
             [status-im.data-store.chats :as chats]
-            [status-im.constants :refer [response-suggesstion-resize-duration]]
             [status-im.chat.constants :as c]
-            [status-im.chat.views.plain-message :as plain-message]
-            [status-im.chat.views.command :as command]
-            [status-im.constants :refer [content-type-status
+            [status-im.chat.utils :as chat-utils]
+            [status-im.constants :refer [response-suggesstion-resize-duration
+                                         content-type-status
                                          console-chat-id]]
+            [status-im.models.commands :as commands]
             [status-im.utils.platform :refer [platform-specific ios?]]
             [taoensso.timbre :as log]))
 
@@ -75,12 +74,13 @@
   (fn [_ _]
     (let [input-message (subscribe [:get-chat-input-text])]
       (reaction
-        (plain-message/message-valid? @input-message)))))
+        (and (pos? (count @input-message))
+             (not= c/command-char @input-message))))))
 
 (register-sub :valid-command?
   (fn [_ [_ validator]]
     (let [input (subscribe [:get-chat-command-content])]
-      (reaction (command/valid? @input validator)))))
+      (reaction (chat-utils/command-valid? @input validator)))))
 
 (register-sub :get-chat-command
   (fn [db _]

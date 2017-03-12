@@ -1,10 +1,7 @@
-(ns status-im.chat.styles.input
+(ns status-im.chat.old-styles.input
   (:require [status-im.components.styles :refer [color-white
                                                  color-blue
                                                  text1-color]]))
-
-(def command-input-and-suggestions-container
-  {:flexDirection :column})
 
 (def command-input-container
   {:flexDirection   :row
@@ -54,12 +51,6 @@
    :marginLeft 12
    :width      15
    :height     15})
-
-(def cancel-container
-  {:marginTop   10
-   :marginRight 10
-   :width       36
-   :height      36})
 
 (def cancel-icon
   {:marginTop  10.5

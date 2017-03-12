@@ -1,4 +1,4 @@
-(ns status-im.chat.styles.plain-message
+(ns status-im.chat.old-styles.plain-message
   (:require [status-im.components.styles :refer [text1-color
                                                  color-blue]]
             [status-im.chat.constants :refer [max-input-height

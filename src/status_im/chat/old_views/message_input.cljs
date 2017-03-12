@@ -1,22 +1,21 @@
-(ns status-im.chat.views.message-input
+(ns status-im.chat.old-views.message-input
   (:require-macros [status-im.utils.views :refer [defview]])
-  (:require [re-frame.core :refer [subscribe dispatch]]
+  (:require [reagent.core :as r]
+            [re-frame.core :refer [subscribe dispatch]]
+            [taoensso.timbre :as log]
+            [clojure.string :as s]
             [status-im.components.react :refer [view
                                                 text
                                                 animated-view
                                                 icon
                                                 touchable-highlight
                                                 text-input]]
-            [status-im.chat.views.plain-message :as plain-message]
-            [status-im.chat.views.command :as command]
-            [status-im.chat.styles.message-input :as st]
-            [status-im.chat.styles.plain-message :as st-message]
-            [status-im.chat.styles.response :as st-response]
+            [status-im.chat.old-views.plain-message :as plain-message]
+            [status-im.chat.old-views.command :as command]
+            [status-im.chat.old-styles.message-input :as st]
+            [status-im.chat.old-styles.plain-message :as st-message]
+            [status-im.chat.old-styles.response :as st-response]
             [status-im.accessibility-ids :as id]
-            [reagent.core :as r]
-            [clojure.string :as str]
-            [taoensso.timbre :as log]
-            [clojure.string :as s]
             [status-im.commands.utils :refer [command-prefix]]))
 
 (defn send-button [{:keys [on-press accessibility-label]}]
@@ -28,8 +27,8 @@
 
 (defn plain-input-options [{:keys [set-layout-size-fn disable?]}]
   {:style                  st-message/message-input
-   :on-change-text         (when-not disable? plain-message/set-input-message)
-   :on-submit-editing      plain-message/send
+   :on-change-text         (when-not disable? #(dispatch [:set-chat-input-text %]))
+   :on-submit-editing      #(dispatch [:send-chat-message])
    :on-content-size-change #(let [size (-> (.-nativeEvent %)
                                            (.-contentSize)
                                            (.-height))]
@@ -50,7 +49,7 @@
                                            (when (and (s/starts-with? text command-prefix)
                                                       (= (inc (count command-prefix)) (count text)))
                                              (reset! flag true))
-                                           (command/set-input-message text)))
+                                           (dispatch [:set-chat-command-content text])))
    :on-submit-editing (fn []
                         (when-not sending-disabled?
                           (dispatch [:send-command!])))
@@ -156,7 +155,7 @@
        plain-message-get-initial-state
        :component-will-update
        (fn [_]
-         (when (or (and @command? (str/blank? @input-command))
+         (when (or (and @command? (s/blank? @input-command))
                    (and (not @command?) (not @input-message)))
            (set-layout-size 0)))
        :reagent-render
@@ -168,11 +167,11 @@
              [view (st/message-input-container height)
               [message-input set-layout-size]]
              [plain-message/smile-button height]
-             (when (or (and @command? (not (str/blank? @input-command)))
+             (when (or (and @command? (not (s/blank? @input-command)))
                        @valid-plain-message?)
                (let [on-press (if @command?
                                 #(dispatch [:send-command!])
-                                plain-message/send)]
+                                #(dispatch [:send-chat-message]))]
                  [send-button {:on-press            (fn [e]
                                                       (when-not @sending-disabled?
                                                         (dispatch [:set-chat-ui-props :show-emoji? false])
