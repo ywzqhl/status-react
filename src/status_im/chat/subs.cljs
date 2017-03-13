@@ -11,7 +11,8 @@
             [status-im.utils.platform :refer [platform-specific ios?]]
             [taoensso.timbre :as log]))
 
-(register-sub :chat-properties
+(register-sub
+  :chat-properties
   (fn [db [_ properties]]
     (->> properties
          (map (fn [k]
@@ -20,12 +21,14 @@
                        (reaction))]))
          (into {}))))
 
+
 (register-sub
   :chat-ui-props
   (fn [db [_ ui-element]]
     (reaction (get-in @db [:chat-ui-props ui-element]))))
 
-(register-sub :chat-input-margin
+(register-sub
+  :chat-input-margin
   (fn []
     (let [kb-height (subscribe [:get :keyboard-height])]
       (reaction
