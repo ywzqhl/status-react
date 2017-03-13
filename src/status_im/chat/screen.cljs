@@ -26,7 +26,6 @@
             #_[status-im.chat.old-views.new-message :refer [chat-message-input-view]]
             #_[status-im.chat.old-views.response :refer [response-view]]
             #_[status-im.chat.old-views.actions :refer [actions-view]]
-            #_[status-im.chat.old-views.emoji :refer [emoji-view]]
             #_[status-im.chat.old-views.bottom-info :refer [bottom-info-view]]
             #_[status-im.chat.old-views.suggestions :refer [suggestion-container]]
             [status-im.chat.constants :as const]
@@ -208,8 +207,6 @@
    #_(when-not command?
        [suggestion-container])
    #_[response-view]
-   #_(when show-emoji?
-     [emoji-view])
    #_[chat-message-input-view]
    #_(when show-actions?
      [actions-view])

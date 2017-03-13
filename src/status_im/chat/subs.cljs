@@ -25,6 +25,16 @@
   (fn [db [_ ui-element]]
     (reaction (get-in @db [:chat-ui-props ui-element]))))
 
+(register-sub :chat-input-margin
+  (fn []
+    (let [kb-height (subscribe [:get :keyboard-height])]
+      (reaction
+        (if ios? @kb-height 0)))))
+
+
+
+
+
 (register-sub :chat
   (fn [db [_ k]]
     (-> @db
@@ -234,16 +244,6 @@
   (fn [db]
     (let [chat-id (subscribe [:get-current-chat-id])]
       (reaction (get-in @db [:kb-mode @chat-id])))))
-
-(register-sub :input-margin
-  (fn []
-    (let [kb-height   (subscribe [:get :keyboard-height])
-          kb-max      (subscribe [:get :keyboard-max-height])
-          show-emoji? (subscribe [:chat-ui-props :show-emoji?])]
-      (reaction
-       (cond @show-emoji? (or @kb-max c/emoji-container-height)
-             ios? @kb-height
-             :else 0)))))
 
 (register-sub :max-layout-height
   (fn [_ [_ status-bar]]

@@ -114,7 +114,8 @@
    :default       {:font-family "sans-serif"}
    :medium        {:font-family "sans-serif-medium"}
 
-   :toolbar-title {:font-family "sans-serif"}})
+   :toolbar-title {:font-family "sans-serif"}
+   :roboto-mono   {:font-family "RobotoMono-Medium"}})
 
 ;; Dialogs
 

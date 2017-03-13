@@ -15,8 +15,6 @@
 (def minimum-command-suggestions-height
   (+ input-height suggestions-header-height))
 
-(def emoji-container-height 250)
-
 (def crazy-math-message-id "crazy-math-message")
 (def passphrase-message-id "passphraze-message")
 (def intro-status-message-id "intro-status")

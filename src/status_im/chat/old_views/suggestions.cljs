@@ -20,7 +20,7 @@
             [status-im.chat.suggestions-responder :as resp]
             [status-im.chat.constants :as chat-consts]
             [status-im.i18n :refer [label]]
-            [status-im.chat.views.response :as response]))
+            [status-im.chat.old-views.response :as response]))
 
 (defn set-command-input [command]
   (dispatch [:set-chat-command command]))
