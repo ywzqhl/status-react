@@ -42,8 +42,7 @@
   (let [component         (r/current-component)
         set-layout-width  #(r/set-state component {:width %})
         set-layout-height #(r/set-state component {:height %})
-        default-value     (subscribe [:chat :input-text])
-        argument-pos      (subscribe [:current-chat-argument-position])]
+        default-value     (subscribe [:chat :input-text])]
     (r/create-class
       {:component-will-mount
        (fn []
@@ -51,8 +50,7 @@
 
        :reagent-render
        (fn [{:keys [command]}]
-         (let [{:keys [width height]} (r/state component)
-               _ (log/debug "ALWX arg-pos" @argument-pos)]
+         (let [{:keys [width height]} (r/state component)]
            [view (style/input-root height command)
             [text-input {:accessibility-label    id/chat-message-input
                          :blur-on-submit         true
@@ -61,7 +59,7 @@
                          :on-blur                #(do (dispatch [:set-chat-ui-props :input-focused? false])
                                                       (set-layout-height 0))
                          :on-change-text         #(do (dispatch [:set-chat-input-text %])
-                                                      (dispatch [:load-chat-parameter-box command @argument-pos]))
+                                                      (dispatch [:load-chat-parameter-box command]))
                          :on-content-size-change #(let [h (-> (.-nativeEvent %)
                                                               (.-contentSize)
                                                               (.-height))]

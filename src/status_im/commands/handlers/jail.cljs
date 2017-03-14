@@ -36,18 +36,6 @@
 
       :else nil)))
 
-(defn suggestions-events-handler!
-  [{:keys [current-chat-id] :as db} [[n data]]]
-  (log/debug "Suggestion event: " data)
-  (let [{:keys [dapp?]} (get-in db [:contacts current-chat-id])
-        command? (= :command (:type (cm/get-chat-command db)))]
-    (case (keyword n)
-      :set-value (if command?
-                   (when dapp?
-                     (dispatch [:set-chat-input-text data])))
-      ;; todo show error?
-      nil)))
-
 (defn print-error-message! [message]
   (fn [_ params]
     (when (:error (last params))
@@ -58,7 +46,8 @@
   (after (print-error-message! "Error on command handling"))
   (handlers/side-effect! command-handler!))
 
-(reg-handler :suggestions-handler
+(reg-handler
+  :suggestions-handler
   [(after (print-error-message! "Error on param suggestions"))]
   (fn [{:keys [contacts chats] :as db} [{:keys [chat-id command parameter-index result]}]]
     (let [{:keys [markup webViewUrl]} (get-in result [:result :returned])
@@ -72,7 +61,14 @@
                           {:hiccup hiccup}
                           {:url web-view-url})))))
 
-(reg-handler :suggestions-event! (handlers/side-effect! suggestions-events-handler!))
+(reg-handler
+  :suggestions-event!
+  (handlers/side-effect!
+    (fn [{:keys [current-chat-id] :as db} [[n arg]]]
+      (let [{:keys [dapp?]} (get-in db [:contacts current-chat-id])]
+        (case (keyword n)
+          :set-command-argument (dispatch [:set-command-argument arg])
+          nil)))))
 
 (reg-handler :set-local-storage
   (fn [{:keys [current-chat-id] :as db} [{:keys [data] :as event}]]

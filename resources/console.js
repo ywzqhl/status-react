@@ -1712,7 +1712,7 @@ var faucets = [
 function faucetSuggestions(params) {
     var suggestions = faucets.map(function(entry) {
         return status.components.touchable(
-            {onPress: [status.events.SET_VALUE, entry.url]},
+            {onPress: [status.events.SET_COMMAND_ARGUMENT, [0, entry.url]]},
             status.components.view(
                 suggestionContainerStyle,
                 [status.components.view(

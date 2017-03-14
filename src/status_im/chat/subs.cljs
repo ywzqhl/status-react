@@ -3,6 +3,7 @@
   (:require [re-frame.core :refer [register-sub dispatch subscribe path]]
             [status-im.data-store.chats :as chats]
             [status-im.chat.constants :as const]
+            [status-im.chat.models.input :as input-model]
             [status-im.chat.utils :as chat-utils]
             [status-im.constants :refer [response-suggesstion-resize-duration
                                          content-type-status
@@ -69,37 +70,18 @@
   (fn [db [_ chat-id]]
     "Returns a vector of [command message-id] values. `message-id` can be `:any`.
      Example: [[browse-command :any] [debug-command :any] [phone-command '1489161286111-58a2cd...']]"
-    (let [current-chat-id (or chat-id (@db :current-chat-id))
-          requests (subscribe [:chat :requests])
-          commands (subscribe [:chat :commands])]
+    (let [chat-id (or chat-id (@db :current-chat-id))]
       (reaction
-        (let [commands  (mapv (fn [[_ command]]
-                                (vector command :any))
-                              @commands)
-              responses (mapv (fn [{:keys [message-id type]}]
-                                (vector
-                                  (get-in @db [:chats current-chat-id :responses type])
-                                  message-id))
-                              @requests)]
-          (into commands responses))))))
+        (input-model/possible-chat-actions @db chat-id)))))
 
 (register-sub
   :selected-chat-command
   (fn [db [_ chat-id]]
-    (let [current-chat-id  (or chat-id (@db :current-chat-id))
-          possible-actions (subscribe [:possible-chat-actions current-chat-id])]
+    (let [chat-id          (or chat-id (@db :current-chat-id))
+          possible-actions (subscribe [:possible-chat-actions chat-id])
+          input-text       (subscribe [:chat :input-text chat-id])]
       (reaction
-        (let [command-args (-> (get-in @db [:chats current-chat-id :input-text])
-                               (str/split const/spacing-char))
-              command-name (first command-args)]
-          (when (.startsWith command-name const/command-char)
-            (when-let [command (-> (filter (fn [[{:keys [name]} message-id]]
-                                             (and (= name (subs command-name 1))
-                                                  (= message-id :any)))
-                                           @possible-actions)
-                                   (ffirst))]
-              {:command command
-               :args    (remove empty? (rest command-args))})))))))
+        (input-model/selected-chat-command @input-text @possible-actions)))))
 
 (register-sub
   :current-chat-argument-position
@@ -108,12 +90,7 @@
           command    (subscribe [:selected-chat-command chat-id])
           input-text (subscribe [:chat :input-text current-chat-id])]
       (reaction
-        (if @command
-          (let [current (-> (:args @command) (count))]
-            (if (= (last @input-text) const/spacing-char)
-              current
-              (dec current)))
-          -1)))))
+        (input-model/current-chat-argument-position @command @input-text)))))
 
 (register-sub
   :chat-parameter-box

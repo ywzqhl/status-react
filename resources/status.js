@@ -180,7 +180,8 @@ var status = {
         PASSWORD: 'password'
     },
     events: {
-        SET_VALUE: 'set-value'
+        SET_VALUE: 'set-value',
+        SET_COMMAND_ARGUMENT: 'set-command-argument'
     },
     components: {
         view: view,
