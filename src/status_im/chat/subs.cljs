@@ -66,7 +66,7 @@
 
 (register-sub
   :possible-chat-actions
-  (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+  (fn [db [_ chat-id]]
     "Returns a vector of [command message-id] values. `message-id` can be `:any`.
      Example: [[browse-command :any] [debug-command :any] [phone-command '1489161286111-58a2cd...']]"
     (let [current-chat-id (or chat-id (@db :current-chat-id))
@@ -85,7 +85,7 @@
 
 (register-sub
   :selected-chat-command
-  (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+  (fn [db [_ chat-id]]
     (let [current-chat-id  (or chat-id (@db :current-chat-id))
           possible-actions (subscribe [:possible-chat-actions current-chat-id])]
       (reaction
@@ -99,10 +99,32 @@
                                            @possible-actions)
                                    (ffirst))]
               {:command command
-               :args    (rest command-args)})))))))
+               :args    (remove empty? (rest command-args))})))))))
 
+(register-sub
+  :current-chat-argument-position
+  (fn [db [_ chat-id]]
+    (let [chat-id    (or chat-id (@db :current-chat-id))
+          command    (subscribe [:selected-chat-command chat-id])
+          input-text (subscribe [:chat :input-text current-chat-id])]
+      (reaction
+        (if @command
+          (let [current (-> (:args @command) (count))]
+            (if (= (last @input-text) const/spacing-char)
+              current
+              (dec current)))
+          -1)))))
 
-
+(register-sub
+  :chat-parameter-box
+  (fn [db [_ chat-id]]
+    (let [chat-id (or chat-id (@db :current-chat-id))
+          command (subscribe [:selected-chat-command chat-id])
+          index   (subscribe [:current-chat-argument-position chat-id])]
+      (reaction
+        (when (and @command (> @index -1))
+          (let [command-name (get-in @command [:command :name])]
+            (get-in @db [:chats chat-id :parameter-boxes command-name @index])))))))
 
 
 

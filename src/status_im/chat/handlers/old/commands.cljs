@@ -1,11 +1,11 @@
 (ns status-im.chat.handlers.old.commands
   (:require [re-frame.core :refer [enrich after dispatch]]
             [status-im.utils.handlers :refer [register-handler] :as u]
-            [status-im.components.react :as react-comp]
             [status-im.components.status :as status]
             [status-im.models.commands :as commands]
             [status-im.chat.utils :refer [console? not-console?]]
-            [clojure.string :as str]
+            [status-im.chat.constants :as const]
+            [clojure.string :as s]
             [status-im.commands.utils :as cu]
             [status-im.utils.phone-number :as pn]
             [status-im.i18n :as i18n]
@@ -13,6 +13,20 @@
             [status-im.utils.random :as random]
             [status-im.utils.platform :as platform]
             [taoensso.timbre :as log]))
+
+(register-handler
+  :set-response-chat-command
+  (u/side-effect!
+    (fn [{:keys [current-chat-id] :as db} [_ to-message-id command-key]]
+      (when-let [{response-name :name} (get-in db [:chats current-chat-id :responses command-key])]
+        (dispatch [:select-chat-input-command response-name])
+        (assoc db [:chats current-chat-id :to-message-id] to-message-id)))))
+
+
+
+
+
+
 
 (defn content-by-command
   [{:keys [type]} content]
@@ -43,9 +57,7 @@
       (status/call-jail current-chat-id
                         path
                         params
-                        #(dispatch [:suggestions-handler {:command command
-                                                          :content content
-                                                          :chat-id current-chat-id} %])))))
+                        #(dispatch [:suggestions-handler {:chat-id current-chat-id} %])))))
 
 (defn cancel-command!
   [{:keys [canceled-command]}]
@@ -64,7 +76,7 @@
    (after cancel-command!)
    (after #(dispatch [:clear-validation-errors]))]
   (fn [{:keys [current-chat-id] :as db} [_ content]]
-    (let [starts-as-command? (str/starts-with? content cu/command-prefix)
+    (let [starts-as-command? (s/starts-with? content cu/command-prefix)
           command?           (= :command (current-command db :type))
           {:keys [parameter-idx command]} (commands/get-command-input db)
           parameter-name     (-> command :params (get parameter-idx) :name)]
@@ -159,24 +171,6 @@
    (after #(dispatch [:set-soft-input-mode :resize]))
    (after #(dispatch [:command-edit-mode]))]
   set-chat-command)
-
-(defn set-response-command [db [_ to-message-id command-key params]]
-  (-> db
-      (commands/set-command-input :responses to-message-id command-key params)
-      (assoc :canceled-command false)))
-
-(register-handler ::set-response-chat-command
-  [(after invoke-suggestions-handler!)
-   (after #(dispatch [:command-edit-mode]))
-   (after #(dispatch [:set-chat-input-text "/"]))]
-  set-response-command)
-
-(register-handler :set-response-chat-command
-  (u/side-effect!
-    (fn [{:keys [current-chat-id] :as db}
-         [_ to-message-id command-key params]]
-      (when (get-in db [:chats current-chat-id :responses command-key])
-        (dispatch [::set-response-chat-command to-message-id command-key params])))))
 
 (register-handler ::add-validation-errors
   (after #(dispatch [:fix-response-height]))

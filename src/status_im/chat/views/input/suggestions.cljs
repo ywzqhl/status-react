@@ -23,14 +23,14 @@
 (defview request-item [index {:keys [type message-id]}]
   [{:keys [name description] :as response} [:get-response type]
    {:keys [chat-id]} [:get-current-chat]]
-  [suggestion-item {:on-press    #(do #_(dispatch [:set-response-chat-command message-id type])
-                                      (dispatch [:select-chat-input-command name]))
+  [suggestion-item {:on-press    #(do (dispatch [:set-response-chat-command message-id type])
+                                      (dispatch [:select-chat-input-command response]))
                     :name        name
                     :description description}])
 
-(defview command-item [index [command {:keys [title name description]}]]
+(defview command-item [index [command {:keys [name description] :as command}]]
   []
-  [suggestion-item {:on-press    #(dispatch [:select-chat-input-command name])
+  [suggestion-item {:on-press    #(dispatch [:select-chat-input-command command])
                     :name        name
                     :description description}])
 

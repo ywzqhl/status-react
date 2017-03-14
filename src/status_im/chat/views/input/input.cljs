@@ -12,6 +12,7 @@
                                                 touchable-highlight
                                                 dismiss-keyboard!]]
             [status-im.chat.views.input.emoji :as emoji]
+            [status-im.chat.views.input.parameter-box :as parameter-box]
             [status-im.chat.views.input.suggestions :as suggestions]
             [status-im.chat.styles.input.input :as style]
             [status-im.chat.utils :as utils]))
@@ -41,15 +42,17 @@
   (let [component         (r/current-component)
         set-layout-width  #(r/set-state component {:width %})
         set-layout-height #(r/set-state component {:height %})
-        default-value     (subscribe [:chat :input-text])]
+        default-value     (subscribe [:chat :input-text])
+        argument-pos      (subscribe [:current-chat-argument-position])]
     (r/create-class
       {:component-will-mount
        (fn []
          (dispatch [:update-suggestions]))
 
        :reagent-render
-       (fn [command]
-         (let [{:keys [width height]} (r/state component)]
+       (fn [{:keys [command]}]
+         (let [{:keys [width height]} (r/state component)
+               _ (log/debug "ALWX arg-pos" @argument-pos)]
            [view (style/input-root height command)
             [text-input {:accessibility-label    id/chat-message-input
                          :blur-on-submit         true
@@ -57,7 +60,8 @@
                          :multiline              true
                          :on-blur                #(do (dispatch [:set-chat-ui-props :input-focused? false])
                                                       (set-layout-height 0))
-                         :on-change-text         #(dispatch [:set-chat-input-text %])
+                         :on-change-text         #(do (dispatch [:set-chat-input-text %])
+                                                      (dispatch [:load-chat-parameter-box command @argument-pos]))
                          :on-content-size-change #(let [h (-> (.-nativeEvent %)
                                                               (.-contentSize)
                                                               (.-height))]
@@ -74,17 +78,21 @@
              (utils/safe-trim @default-value)]
             [input-helper {:command command
                            :width   width}]
-            [touchable-highlight {:on-press #(do (dispatch [:toggle-chat-ui-props :show-emoji?])
-                                                 (dismiss-keyboard!))}
-             [view
-              [icon :smile style/input-emoji-icon]]]]))})))
+            (when-not command
+              [touchable-highlight {:on-press #(do (dispatch [:toggle-chat-ui-props :show-emoji?])
+                                                   (dismiss-keyboard!))}
+               [view
+                [icon :smile style/input-emoji-icon]]])]))})))
 
 (defview container []
   [margin [:chat-input-margin]
    show-emoji? [:chat-ui-props :show-emoji?]
+   chat-parameter-box [:chat-parameter-box]
    show-suggestions? [:chat-ui-props :show-suggestions?]
    selected-chat-command [:selected-chat-command]]
   [view
+   (when chat-parameter-box
+     [parameter-box/parameter-box-view])
    (when show-suggestions?
      [suggestions/suggestions-view])
    [view {:style     (style/root margin)
