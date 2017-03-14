@@ -1,4 +1,4 @@
-(ns status-im.chat.handlers.commands
+(ns status-im.chat.handlers.old.commands
   (:require [re-frame.core :refer [enrich after dispatch]]
             [status-im.utils.handlers :refer [register-handler] :as u]
             [status-im.components.react :as react-comp]
@@ -168,7 +168,7 @@
 (register-handler ::set-response-chat-command
   [(after invoke-suggestions-handler!)
    (after #(dispatch [:command-edit-mode]))
-   (after #(dispatch [:set-chat-input-text ""]))]
+   (after #(dispatch [:set-chat-input-text "/"]))]
   set-response-command)
 
 (register-handler :set-response-chat-command
@@ -309,7 +309,3 @@
           (do
             (dispatch [:set-chat-ui-props :sending-disabled? true])
             (dispatch [:validate-command])))))))
-
-(defn fib-lazy
-  ([] (fib-lazy 0 1))
-  ([x1 x2] (cons x1 (lazy-seq (fib-lazy x2 (+ x1 x2))))))

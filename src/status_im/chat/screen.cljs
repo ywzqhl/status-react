@@ -167,23 +167,6 @@
                 :keyboardShouldPersistTaps true
                 :dataSource                (to-datasource-inverted messages)}]))
 
-(defn messages-container-animation-logic
-  [{:keys [offset val]}]
-  (fn [_]
-    (anim/start (anim/spring val {:toValue @offset}))))
-
-(defview messages-container [messages]
-  [offset [:messages-offset]
-   messages-offset (anim/create-value 0)
-   context {:offset offset
-            :val    messages-offset}
-   on-update (messages-container-animation-logic context)]
-  {:component-did-mount  on-update
-   :component-did-update on-update}
-  [animated-view
-   {:style (st/messages-container messages-offset)}
-   messages])
-
 (defview chat []
   [group-chat [:chat :group-chat]
    show-actions? [:chat-ui-props :show-actions?]
@@ -199,8 +182,7 @@
                        (when (not= height layout-height)
                          (dispatch [:set-layout-height height]))))}
    [chat-toolbar]
-   [messages-container
-    [messages-view group-chat]]
+   [messages-view group-chat]
    [input/container]
    #_[chat-message-input-view]
    #_(when @group-chat [typing-all])

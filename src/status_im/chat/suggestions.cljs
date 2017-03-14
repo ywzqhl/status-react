@@ -12,14 +12,15 @@
 
 (defn can-be-suggested? [text]
   (fn [{:keys [name]}]
-    (.startsWith (str chat-consts/command-char name) text)))
+    (let [text' (if (.startsWith text chat-consts/command-char)
+                  text
+                  chat-consts/command-char)]
+      (.startsWith (str chat-consts/command-char name) text'))))
 
 (defn get-suggestions
   [{:keys [current-chat-id] :as db} text]
   (let [commands (get-in db [:chats current-chat-id :commands])]
-    (if (suggestion? text)
-      (filter (fn [[_ v]] ((can-be-suggested? text) v)) commands)
-      [])))
+    (filter (fn [[_ v]] ((can-be-suggested? text) v)) commands)))
 
 (defn get-command [db text]
   (when (suggestion? text)

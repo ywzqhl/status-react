@@ -26,10 +26,11 @@
                                                   valid-mobile-number?]]
             [status-im.components.status :as status]
             [status-im.utils.types :refer [json->clj]]
-            status-im.chat.handlers.commands
+            status-im.chat.handlers.old.commands
             [status-im.commands.utils :refer [command-prefix]]
-            [status-im.chat.utils :refer [console? not-console?]]
+            [status-im.chat.utils :refer [console? not-console? safe-trim]]
             [status-im.utils.gfycat.core :refer [generate-gfy]]
+            status-im.chat.handlers.input
             status-im.chat.handlers.animation
             status-im.chat.handlers.requests
             status-im.chat.handlers.unviewed-messages
@@ -49,10 +50,6 @@
 (register-handler :toggle-chat-ui-props
   (fn [{:keys [chat-ui-props] :as db} [_ ui-element]]
     (assoc-in db [:chat-ui-props ui-element] (not (ui-element chat-ui-props)))))
-
-(register-handler :set-show-info
-  (fn [db [_ show-info]]
-    (assoc db :show-info show-info)))
 
 (register-handler :show-message-details
   (u/side-effect!
@@ -81,9 +78,30 @@
                     (assoc-in [:chats current-chat-id :all-loaded?] all-loaded?)))))
         db))))
 
-(defn safe-trim [s]
-  (when (string? s)
-    (string/trim s)))
+(defn set-message-shown
+  [db chat-id message-id]
+  (update-in db
+             [:chats chat-id :messages]
+             (fn [messages]
+               (map (fn [message]
+                      (if (= message-id (:message-id message))
+                        (assoc message :new? false)
+                        message))
+                    messages))))
+
+(register-handler :set-message-shown
+  (fn [db [_ {:keys [chat-id message-id]}]]
+    (set-message-shown db chat-id message-id)))
+
+
+
+
+
+
+
+
+
+
 
 (register-handler :cancel-command
   (fn [{:keys [current-chat-id] :as db} _]
@@ -99,22 +117,7 @@
       (dispatch [:animate-cancel-command])
       (dispatch [:cancel-command]))))
 
-(defn update-input-text
-  [{:keys [current-chat-id] :as db} text]
-  (assoc-in db [:chats current-chat-id :input-text] text))
 
-(register-handler :set-message-input []
-  (fn [db [_ input]]
-    (assoc db :message-input input)))
-
-(register-handler :blur-message-input
-  (u/side-effect!
-    (fn [db _]
-      (when-let [message-input (:message-input db)]
-        (.blur message-input)))))
-
-(defn update-text [db [_ chat-id text]]
-  (assoc-in db [:chats chat-id :input-text] text))
 
 (defn update-command [db [_ text]]
   (if-not (commands/get-chat-command db)
@@ -166,7 +169,7 @@
                                 (dispatch [:suggestions-handler {:chat-id chat-id} data])
                                 (dispatch [:clear-response-suggestions chat-id])))))))))
 
-(register-handler :set-chat-input-text
+#_(register-handler :set-chat-input-text
   (u/side-effect!
     (fn [{:keys [current-chat-id]} [_ text]]
       ;; fixes https://github.com/status-im/status-react/issues/594
@@ -207,29 +210,17 @@
       (dispatch [:set-chat-command command type])
       (dispatch [:set-chat-command-content text]))))
 
-(register-handler :set-message-input-view-height
-  (fn [{:keys [current-chat-id] :as db} [_ height]]
-    (assoc-in db [:chats current-chat-id :message-input-height] height)))
-
 (register-handler ::check-suggestions
   [(after select-suggestion!)
    (after #(dispatch [:animate-command-suggestions]))]
   check-suggestions)
 
-(register-handler ::set-text update-text)
 
-(defn set-message-shown
-  [db chat-id message-id]
-  (update-in db [:chats chat-id :messages] (fn [messages]
-                                             (map (fn [message]
-                                                    (if (= message-id (:message-id message))
-                                                      (assoc message :new? false)
-                                                      message))
-                                                  messages))))
 
-(register-handler :set-message-shown
-  (fn [db [_ {:keys [chat-id message-id]}]]
-    (set-message-shown db chat-id message-id)))
+
+(register-handler ::set-text
+  [db [_ chat-id text]]
+  (assoc-in db [:chats chat-id :input-text] text))
 
 (defn init-console-chat
   ([{:keys [chats current-account-id] :as db} existing-account?]

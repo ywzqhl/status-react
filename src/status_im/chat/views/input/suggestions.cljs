@@ -10,7 +10,7 @@
             [status-im.i18n :refer [label]]
             [taoensso.timbre :as log]))
 
-(defn suggestion-item-general [{:keys [on-press name description]}]
+(defn suggestion-item [{:keys [on-press name description]}]
   [touchable-highlight {:on-press on-press}
    [view (style/item-suggestion-container true)
     [view {:style style/item-suggestion-name}
@@ -23,15 +23,16 @@
 (defview request-item [index {:keys [type message-id]}]
   [{:keys [name description] :as response} [:get-response type]
    {:keys [chat-id]} [:get-current-chat]]
-  [suggestion-item-general {:on-press    #(dispatch [:set-response-chat-command message-id type])
-                            :name        name
-                            :description description}])
+  [suggestion-item {:on-press    #(do #_(dispatch [:set-response-chat-command message-id type])
+                                      (dispatch [:select-chat-input-command name]))
+                    :name        name
+                    :description description}])
 
-(defview suggestion-item [index [command {:keys [title name description]}]]
+(defview command-item [index [command {:keys [title name description]}]]
   []
-  [suggestion-item-general {:on-press    #(dispatch [:set-chat-command command])
-                            :name        name
-                            :description description}])
+  [suggestion-item {:on-press    #(dispatch [:select-chat-input-command name])
+                    :name        name
+                    :description description}])
 
 (defn item-title [top-padding? s]
   [view (style/item-title-container top-padding?)
@@ -44,9 +45,9 @@
 
 (defview suggestions-view []
   [input-height [:chat-ui-props :input-height]
-   requests [:get-requests]
-   suggestions [:get-suggestions]]
-  [view (style/root 200 input-height)
+   requests [:chat :requests]
+   suggestions [:chat :command-suggestions]]
+  [view (style/root 250 input-height)
    [header]
    [view {:flex 1}
     [scroll-view {:keyboardShouldPersistTaps true}
@@ -59,6 +60,6 @@
      (when (seq suggestions)
        [view
         [item-title (seq requests) (label :t/suggestions-commands)]
-        (for [suggestion (remove #(nil? (:title (second %))) suggestions)]
-          ^{:key (first suggestion)}
-          [suggestion-item 0 suggestion])])]]])
+        (for [command (remove #(nil? (:title (second %))) suggestions)]
+          ^{:key (first command)}
+          [command-item 0 command])])]]])

@@ -2,14 +2,15 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :refer [register-sub dispatch subscribe path]]
             [status-im.data-store.chats :as chats]
-            [status-im.chat.constants :as c]
+            [status-im.chat.constants :as const]
             [status-im.chat.utils :as chat-utils]
             [status-im.constants :refer [response-suggesstion-resize-duration
                                          content-type-status
                                          console-chat-id]]
             [status-im.models.commands :as commands]
             [status-im.utils.platform :refer [platform-specific ios?]]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [clojure.string :as str]))
 
 (register-sub
   :chat-properties
@@ -34,61 +35,88 @@
       (reaction
         (if ios? @kb-height 0)))))
 
-
-
-
-
-(register-sub :chat
-  (fn [db [_ k]]
+(register-sub
+  :chat
+  (fn [db [_ k chat-id]]
     (-> @db
-        (get-in [:chats (:current-chat-id @db) k])
+        (get-in [:chats (or chat-id (:current-chat-id @db)) k])
         (reaction))))
 
-(register-sub :get-current-chat-id
+(register-sub
+  :get-current-chat-id
   (fn [db _]
     (reaction (:current-chat-id @db))))
 
-(register-sub :get-suggestions
-  (fn [db _]
-    (let [chat-id (subscribe [:get-current-chat-id])]
-      (reaction (get-in @db [:command-suggestions @chat-id])))))
+(register-sub
+  :get-chat-by-id
+  (fn [_ [_ chat-id]]
+    (reaction (chats/get-by-id chat-id))))
 
-(register-sub :get-commands
+(register-sub
+  :get-commands
   (fn [db [_ chat-id]]
     (let [current-chat (or chat-id (@db :current-chat-id))]
       (reaction (or (get-in @db [:chats current-chat :commands]) {})))))
 
-(register-sub :get-chat-by-id
-  (fn [_ [_ chat-id]]
-    (reaction (chats/get-by-id chat-id))))
-
-(register-sub :get-responses
+(register-sub
+  :get-responses
   (fn [db [_ chat-id]]
     (let [current-chat (or chat-id (@db :current-chat-id))]
       (reaction (or (get-in @db [:chats current-chat :responses]) {})))))
 
-(register-sub :get-commands-and-responses
-  (fn [db [_ chat-id]]
-    (reaction (->> (get-in @db [:chats chat-id])
-                   ((juxt :commands :responses))
-                   (apply merge)))))
+(register-sub
+  :possible-chat-actions
+  (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+    "Returns a vector of [command message-id] values. `message-id` can be `:any`.
+     Example: [[browse-command :any] [debug-command :any] [phone-command '1489161286111-58a2cd...']]"
+    (let [current-chat-id (or chat-id (@db :current-chat-id))
+          requests (subscribe [:chat :requests])
+          commands (subscribe [:chat :commands])]
+      (reaction
+        (let [commands  (mapv (fn [[_ command]]
+                                (vector command :any))
+                              @commands)
+              responses (mapv (fn [{:keys [message-id type]}]
+                                (vector
+                                  (get-in @db [:chats current-chat-id :responses type])
+                                  message-id))
+                              @requests)]
+          (into commands responses))))))
 
-(register-sub :get-chat-input-text
-  (fn [db _]
-    (->> [:chats (:current-chat-id @db) :input-text]
-         (get-in @db)
-         (reaction))))
+(register-sub
+  :selected-chat-command
+  (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+    (let [current-chat-id  (or chat-id (@db :current-chat-id))
+          possible-actions (subscribe [:possible-chat-actions current-chat-id])]
+      (reaction
+        (let [command-args (-> (get-in @db [:chats current-chat-id :input-text])
+                               (str/split const/spacing-char))
+              command-name (first command-args)]
+          (when (.startsWith command-name const/command-char)
+            (when-let [command (-> (filter (fn [[{:keys [name]} message-id]]
+                                             (and (= name (subs command-name 1))
+                                                  (= message-id :any)))
+                                           @possible-actions)
+                                   (ffirst))]
+              {:command command
+               :args    (rest command-args)})))))))
 
-(register-sub :get-message-input-view-height
-  (fn [db _]
-    (reaction (get-in @db [:chats (:current-chat-id @db) :message-input-height]))))
+
+
+
+
+
+
+
+
+
 
 (register-sub :valid-plain-message?
   (fn [_ _]
-    (let [input-message (subscribe [:get-chat-input-text])]
+    (let [input-message (subscribe [:chat :input-text])]
       (reaction
         (and (pos? (count @input-message))
-             (not= c/command-char @input-message))))))
+             (not= const/command-char @input-message))))))
 
 (register-sub :valid-command?
   (fn [_ [_ validator]]
@@ -150,10 +178,10 @@
           command-suggestions (subscribe [:get-content-suggestions])]
       (reaction
         (cond (and @command? (= @type :response))
-              c/request-info-height
+              const/request-info-height
 
               (and @command? (= @type :command) (seq @command-suggestions))
-              c/suggestions-header-height
+              const/suggestions-header-height
 
               :else 0)))))
 
@@ -164,11 +192,6 @@
       (reaction (if (= :command @type)
                   @width
                   0)))))
-
-(register-sub :get-requests
-  (fn [db]
-    (let [chat-id (subscribe [:get-current-chat-id])]
-      (reaction (get-in @db [:chats @chat-id :requests])))))
 
 (register-sub :get-requests-map
   (fn [db]
@@ -195,7 +218,7 @@
 
 (register-sub :is-request-answered?
   (fn [_ [_ message-id]]
-    (let [requests (subscribe [:get-requests])]
+    (let [requests (subscribe [:chat :requests])]
       (reaction (not-any? #(= message-id (:message-id %)) @requests)))))
 
 (register-sub :validation-errors

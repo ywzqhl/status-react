@@ -1,6 +1,7 @@
 (ns status-im.chat.views.input.input
   (:require-macros [status-im.utils.views :refer [defview]])
-  (:require [reagent.core :as r]
+  (:require [clojure.string :as str]
+            [reagent.core :as r]
             [re-frame.core :refer [subscribe dispatch]]
             [taoensso.timbre :as log]
             [status-im.accessibility-ids :as id]
@@ -12,7 +13,8 @@
                                                 dismiss-keyboard!]]
             [status-im.chat.views.input.emoji :as emoji]
             [status-im.chat.views.input.suggestions :as suggestions]
-            [status-im.chat.styles.input.input :as style]))
+            [status-im.chat.styles.input.input :as style]
+            [status-im.chat.utils :as utils]))
 
 (defview commands-view []
   []
@@ -28,15 +30,27 @@
            :font  :roboto-mono}
      "/send"]]])
 
-(defn input-view []
+(defn input-helper [{:keys [command width]}]
+  (when (and command
+             (empty? (:args command)))
+    (when-let [placeholder (get-in command [:command :params 0 :placeholder])]
+      [text {:style (style/input-helper-text width)}
+       placeholder])))
+
+(defn input-view [_]
   (let [component         (r/current-component)
+        set-layout-width  #(r/set-state component {:width %})
         set-layout-height #(r/set-state component {:height %})
-        default-value     (subscribe [:get-chat-input-text])]
+        default-value     (subscribe [:chat :input-text])]
     (r/create-class
-      {:reagent-render
+      {:component-will-mount
        (fn []
-         (let [{:keys [height]} (r/state component)]
-           [view (style/input-root height)
+         (dispatch [:update-suggestions]))
+
+       :reagent-render
+       (fn [command]
+         (let [{:keys [width height]} (r/state component)]
+           [view (style/input-root height command)
             [text-input {:accessibility-label    id/chat-message-input
                          :blur-on-submit         true
                          :default-value          @default-value
@@ -52,7 +66,14 @@
                          :on-focus               #(do (dispatch [:set-chat-ui-props :input-focused? true])
                                                       (dispatch [:set-chat-ui-props :show-emoji? false]))
                          :style                  style/input-view}]
-
+            [text {:style     style/invisible-input-text
+                   :on-layout #(let [w (-> (.-nativeEvent %)
+                                           (.-layout)
+                                           (.-width))]
+                                 (set-layout-width w))}
+             (utils/safe-trim @default-value)]
+            [input-helper {:command command
+                           :width   width}]
             [touchable-highlight {:on-press #(do (dispatch [:toggle-chat-ui-props :show-emoji?])
                                                  (dismiss-keyboard!))}
              [view
@@ -61,7 +82,8 @@
 (defview container []
   [margin [:chat-input-margin]
    show-emoji? [:chat-ui-props :show-emoji?]
-   show-suggestions? [:chat-ui-props :show-suggestions?]]
+   show-suggestions? [:chat-ui-props :show-suggestions?]
+   selected-chat-command [:selected-chat-command]]
   [view
    (when show-suggestions?
      [suggestions/suggestions-view])
@@ -70,8 +92,9 @@
                                   (.-layout)
                                   (.-height))]
                         (dispatch [:set-chat-ui-props :input-height h]))}
-    [view style/container
-     [commands-view]
-     [input-view]]
+    [view (style/container selected-chat-command)
+     (when-not selected-chat-command
+       [commands-view])
+     [input-view selected-chat-command]]
     (when show-emoji?
       [emoji/emoji-view])]])

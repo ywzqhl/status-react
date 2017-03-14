@@ -1,6 +1,7 @@
 (ns status-im.chat.utils
   (:require [status-im.constants :refer [console-chat-id
-                                         wallet-chat-id]]))
+                                         wallet-chat-id]]
+            [clojure.string :as str]))
 
 (defn console? [s]
   (= console-chat-id s))
@@ -10,6 +11,10 @@
 
 (defn wallet? [s]
   (= wallet-chat-id s))
+
+(defn safe-trim [s]
+  (when (string? s)
+    (str/trim s)))
 
 (defn add-message-to-db
   ([db add-to-chat-id chat-id message] (add-message-to-db db add-to-chat-id chat-id message true))
