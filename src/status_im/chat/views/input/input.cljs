@@ -49,7 +49,7 @@
          (dispatch [:update-suggestions]))
 
        :reagent-render
-       (fn [{:keys [command]}]
+       (fn [command]
          (let [{:keys [width height]} (r/state component)]
            [view (style/input-root height command)
             [text-input {:accessibility-label    id/chat-message-input
@@ -59,7 +59,7 @@
                          :on-blur                #(do (dispatch [:set-chat-ui-props :input-focused? false])
                                                       (set-layout-height 0))
                          :on-change-text         #(do (dispatch [:set-chat-input-text %])
-                                                      (dispatch [:load-chat-parameter-box command]))
+                                                      (dispatch [:load-chat-parameter-box (:command command)]))
                          :on-content-size-change #(let [h (-> (.-nativeEvent %)
                                                               (.-contentSize)
                                                               (.-height))]
@@ -85,14 +85,10 @@
 (defview container []
   [margin [:chat-input-margin]
    show-emoji? [:chat-ui-props :show-emoji?]
-   chat-parameter-box [:chat-parameter-box]
-   show-suggestions? [:chat-ui-props :show-suggestions?]
    selected-chat-command [:selected-chat-command]]
   [view
-   (when chat-parameter-box
-     [parameter-box/parameter-box-view])
-   (when show-suggestions?
-     [suggestions/suggestions-view])
+   [parameter-box/parameter-box-view]
+   [suggestions/suggestions-view]
    [view {:style     (style/root margin)
           :on-layout #(let [h (-> (.-nativeEvent %)
                                   (.-layout)

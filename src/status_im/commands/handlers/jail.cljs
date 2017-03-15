@@ -57,9 +57,10 @@
                          (get-contact-translated chat-id :dapp-url dapp-url)
                          webViewUrl)
           path         [:chats chat-id :parameter-boxes (:name command) parameter-index]]
-      (assoc-in db path (if hiccup
-                          {:hiccup hiccup}
-                          {:url web-view-url})))))
+      (assoc-in db path (cond
+                          hiccup {:hiccup hiccup}
+                          web-view-url {:url web-view-url}
+                          :else nil)))))
 
 (reg-handler
   :suggestions-event!

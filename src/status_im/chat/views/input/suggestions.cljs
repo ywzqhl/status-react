@@ -45,21 +45,23 @@
 
 (defview suggestions-view []
   [input-height [:chat-ui-props :input-height]
+   show-suggestions? [:chat-ui-props :show-suggestions?]
    requests [:chat :requests]
    suggestions [:chat :command-suggestions]]
-  [view (style/root 250 input-height)
-   [header]
-   [view {:flex 1}
-    [scroll-view {:keyboardShouldPersistTaps true}
-     (when (seq requests)
-       [view
-        [item-title false (label :t/suggestions-requests)]
-        (for [{:keys [chat-id message-id] :as request} requests]
-          ^{:key [chat-id message-id]}
-          [request-item 0 request])])
-     (when (seq suggestions)
-       [view
-        [item-title (seq requests) (label :t/suggestions-commands)]
-        (for [command (remove #(nil? (:title (second %))) suggestions)]
-          ^{:key (first command)}
-          [command-item 0 command])])]]])
+  (when show-suggestions?
+    [view (style/root 250 input-height)
+     [header]
+     [view {:flex 1}
+      [scroll-view {:keyboardShouldPersistTaps true}
+       (when (seq requests)
+         [view
+          [item-title false (label :t/suggestions-requests)]
+          (for [{:keys [chat-id message-id] :as request} requests]
+            ^{:key [chat-id message-id]}
+            [request-item 0 request])])
+       (when (seq suggestions)
+         [view
+          [item-title (seq requests) (label :t/suggestions-commands)]
+          (for [command (remove #(nil? (:title (second %))) suggestions)]
+            ^{:key (first command)}
+            [command-item 0 command])])]]]))

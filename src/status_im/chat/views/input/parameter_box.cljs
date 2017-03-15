@@ -16,15 +16,15 @@
 
 (defview parameter-box-container []
   [parameter-box [:chat-parameter-box]]
-         (do
-           (log/debug "ALWX pb" parameter-box)
-           (when (:hiccup parameter-box)
-             (log/debug "ALWX pb" parameter-box)
-             (:hiccup parameter-box))))
+  (when (:hiccup parameter-box)
+    (:hiccup parameter-box)))
 
 (defview parameter-box-view []
-  [input-height [:chat-ui-props :input-height]]
-  [view (style/root 250 input-height)
-   [header]
-   [parameter-box-container]
-   [view {:flex 1}]])
+  [input-height [:chat-ui-props :input-height]
+   chat-parameter-box [:chat-parameter-box]]
+  (when chat-parameter-box
+    (log/debug "ALWX cpb" chat-parameter-box)
+    [view (style/root 250 input-height)
+     [header]
+     [parameter-box-container]
+     [view {:flex 1}]]))
