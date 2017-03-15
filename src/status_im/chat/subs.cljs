@@ -88,7 +88,7 @@
   (fn [db [_ chat-id]]
     (let [chat-id    (or chat-id (@db :current-chat-id))
           command    (subscribe [:selected-chat-command chat-id])
-          input-text (subscribe [:chat :input-text current-chat-id])]
+          input-text (subscribe [:chat :input-text chat-id])]
       (reaction
         (input-model/current-chat-argument-position @command @input-text)))))
 
@@ -103,7 +103,23 @@
           (let [command-name (get-in @command [:command :name])]
             (get-in @db [:chats chat-id :parameter-boxes command-name @index])))))))
 
+(register-sub
+  :command-complete?
+  (fn [db [_ chat-id]]
+    (reaction
+      (input-model/command-complete? @db chat-id))))
 
+(register-sub
+  :show-suggestions?
+  (fn [db [_ chat-id]]
+    (let [chat-id           (or chat-id (@db :current-chat-id))
+          show-suggestions? (subscribe [:chat-ui-props :show-suggestions?])
+          input-text        (subscribe [:chat :input-text chat-id])
+          selected-command  (subscribe [:selected-chat-command chat-id])]
+      (reaction
+        (and (not (:command @selected-command))
+             (or @show-suggestions?
+                 (.startsWith (or @input-text "") const/command-char)))))))
 
 
 

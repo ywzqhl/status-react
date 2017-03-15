@@ -3,7 +3,7 @@
 
 (def color-root-border "rgba(192, 198, 202, 0.5)")
 (def color-item-title-text "rgb(147, 155, 161)")
-(def color-item-suggestion-name "#6b8fdb")
+(def color-item-suggestion-name "rgb(98, 143, 227)")
 (def color-item-border "#e8eaeb")
 
 (defn root [height bottom]

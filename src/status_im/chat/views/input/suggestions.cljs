@@ -45,7 +45,7 @@
 
 (defview suggestions-view []
   [input-height [:chat-ui-props :input-height]
-   show-suggestions? [:chat-ui-props :show-suggestions?]
+   show-suggestions? [:show-suggestions?]
    requests [:chat :requests]
    suggestions [:chat :command-suggestions]]
   (when show-suggestions?

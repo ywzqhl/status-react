@@ -219,8 +219,8 @@
 
 
 (register-handler ::set-text
-  [db [_ chat-id text]]
-  (assoc-in db [:chats chat-id :input-text] text))
+  (fn [db [_ chat-id text]]
+    (assoc-in db [:chats chat-id :input-text] text)))
 
 (defn init-console-chat
   ([{:keys [chats current-account-id] :as db} existing-account?]

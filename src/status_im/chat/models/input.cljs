@@ -41,9 +41,14 @@
         chat-command     (selected-chat-command input-text possible-actions)]
     (current-chat-argument-position chat-command input-text)))
 
-(defn command-complete? [{:keys [current-chat-id] :as db}]
-  (let [possible-actions (possible-chat-actions db current-chat-id)
-        input-text       (get-in db [:chats current-chat-id :input-text])
-        chat-command     (selected-chat-command input-text possible-actions)]
-    (= (count (:args chat-command))
-       (count (get-in chat-command [:command :params])))))
+(defn command-complete?
+  ([{:keys [current-chat-id] :as db} chat-id]
+   (let [chat-id          (or chat-id current-chat-id)
+         possible-actions (possible-chat-actions db chat-id)
+         input-text       (get-in db [:chats chat-id :input-text])
+         chat-command     (selected-chat-command input-text possible-actions)]
+     (command-complete? chat-command)))
+  ([chat-command]
+   (and chat-command
+        (= (count (:args chat-command))
+           (count (get-in chat-command [:command :params]))))))

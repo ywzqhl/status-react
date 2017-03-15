@@ -10,9 +10,10 @@
 
 (handlers/register-handler
   :set-chat-input-text
-  (fn [{:keys [current-chat-id] :as db} [_ text]]
-    (dispatch [:update-suggestions current-chat-id text])
-    (assoc-in db [:chats current-chat-id :input-text] text)))
+  (fn [{:keys [current-chat-id] :as db} [_ text chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (dispatch [:update-suggestions chat-id text])
+      (assoc-in db [:chats chat-id :input-text] text))))
 
 (handlers/register-handler
   :select-chat-input-command
@@ -36,8 +37,7 @@
         (dispatch [:set-chat-input-text (str command-name
                                              const/spacing-char
                                              (str/join const/spacing-char command-args)
-                                             const/spacing-char)])
-        (dispatch [:send-if-command-complete])))))
+                                             const/spacing-char)])))))
 
 (handlers/register-handler
   :update-suggestions
@@ -75,8 +75,61 @@
                                            :result          %}]))))))))
 
 (handlers/register-handler
-  :send-if-command-complete
+  ::send-message
   (handlers/side-effect!
-    (fn [db]
-      (when (input-model/command-complete? db)
-        (dispatch [:send-chat-message])))))
+    (fn [{:keys [current-chat-id current-public-key current-account-id] :as db} [_ command-message chat-id]]
+      (let [chat-id (or chat-id current-chat-id)
+            text    (get-in db [:chats chat-id :input-text])
+            data    {:message  text
+                     :command  command-message
+                     :chat-id  chat-id
+                     :identity current-public-key
+                     :address  current-account-id}]
+        (dispatch [:set-chat-input-text nil chat-id])
+        (cond
+          command-message
+          (dispatch [:check-commands-handlers! data])
+          (not (str/blank? text))
+          (dispatch [:prepare-message data]))))))
+
+(handlers/register-handler
+  ::send-command
+  (handlers/side-effect!
+    (fn [db [_ command]]
+      (log/debug "ALWX >> send-command" command))))
+
+#_(handlers/register-handler
+  :send-command!
+  (handlers/side-effect!
+    (fn [{:keys [current-chat-id current-account-id] :as db}]
+      (let [{:keys [params] :as command} (commands/get-chat-command db)
+            {:keys [parameter-idx]} (commands/get-command-input db)
+
+            last-parameter? (= (inc parameter-idx) (count params))
+
+            parameters      {:command command :input command-input}
+
+            {:keys [command content]} (command-input db)
+            content'        (content-by-command command content)]
+        (dispatch [:set-command-parameter
+                   {:value     content'
+                    :parameter (para s parameter-idx)}])
+        (if last-parameter?
+          (dispatch [:check-suggestions-trigger! parameters])
+          (dispatch [::start-command-validation!
+                     {:chat-id current-chat-id
+                      :address current-account-id
+                      :handler #(dispatch [:next-command-parameter])}]))))))
+
+(handlers/register-handler
+  :send-current-message
+  (handlers/side-effect!
+    (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
+      (let [chat-id          (or chat-id current-chat-id)
+            possible-actions (input-model/possible-chat-actions db chat-id)
+            input-text       (get-in db [:chats chat-id :input-text])
+            chat-command     (input-model/selected-chat-command input-text possible-actions)]
+        (if chat-command
+          (when (input-model/command-complete? chat-command)
+            (dispatch [::send-command chat-command]))
+          (dispatch [::send-message nil chat-id]))))))

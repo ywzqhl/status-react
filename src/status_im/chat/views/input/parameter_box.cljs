@@ -23,7 +23,6 @@
   [input-height [:chat-ui-props :input-height]
    chat-parameter-box [:chat-parameter-box]]
   (when chat-parameter-box
-    (log/debug "ALWX cpb" chat-parameter-box)
     [view (style/root 250 input-height)
      [header]
      [parameter-box-container]

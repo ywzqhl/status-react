@@ -43,28 +43,11 @@
      :clock-value  (inc clock-value)
      :show?        true}))
 
-(register-handler :send-chat-message
-  (u/side-effect!
-    (fn [{:keys [current-chat-id current-public-key current-account-id] :as db}
-         [_ {:keys [chat-id] :as command-message}]]
-      (let [text (get-in db [:chats current-chat-id :input-text])
-            data {:command  command-message
-                  :message  text
-                  :chat-id  (or chat-id current-chat-id)
-                  :identity current-public-key
-                  :address  current-account-id}]
-        (dispatch [:clear-input current-chat-id])
-        (cond
-          command-message
-          (dispatch [::check-commands-handlers! data])
-          (not (s/blank? text))
-          (dispatch [::prepare-message data]))))))
-
 (defn console-command? [chat-id command-name]
   (and (= console-chat-id chat-id)
        (console/commands-names (keyword command-name))))
 
-(register-handler ::check-commands-handlers!
+(register-handler :check-commands-handlers!
   (u/side-effect!
     (fn [_ [_ {:keys [command message chat-id] :as params}]]
       (let [{:keys [command] :as message} command]
@@ -170,7 +153,7 @@
           params
           #(dispatch [:command-handler! chat-id parameters %]))))))
 
-(register-handler ::prepare-message
+(register-handler :prepare-message
   (u/side-effect!
     (fn [{:keys [network-status] :as db} [_ {:keys [chat-id identity message] :as params}]]
       (let [{:keys [group-chat public?]} (get-in db [:chats chat-id])

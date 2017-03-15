@@ -31,26 +31,36 @@
            :font  :roboto-mono}
      "/send"]]])
 
-(defn input-helper [{:keys [command width]}]
+(defn- invisible-input [{:keys [set-layout-width value]}]
+  [text {:style     style/invisible-input-text
+         :on-layout #(let [w (-> (.-nativeEvent %)
+                                 (.-layout)
+                                 (.-width))]
+                       (set-layout-width w))}
+   (utils/safe-trim value)])
+
+(defn- input-helper [{:keys [command width]}]
   (when (and command
              (empty? (:args command)))
     (when-let [placeholder (get-in command [:command :params 0 :placeholder])]
       [text {:style (style/input-helper-text width)}
        placeholder])))
 
-(defn input-view [_]
+(defn input-view []
   (let [component         (r/current-component)
         set-layout-width  #(r/set-state component {:width %})
         set-layout-height #(r/set-state component {:height %})
-        default-value     (subscribe [:chat :input-text])]
+        default-value     (subscribe [:chat :input-text])
+        command           (subscribe [:selected-chat-command])]
     (r/create-class
       {:component-will-mount
        (fn []
          (dispatch [:update-suggestions]))
 
        :reagent-render
-       (fn [command]
-         (let [{:keys [width height]} (r/state component)]
+       (fn []
+         (let [{:keys [width height]} (r/state component)
+               command @command]
            [view (style/input-root height command)
             [text-input {:accessibility-label    id/chat-message-input
                          :blur-on-submit         true
@@ -64,16 +74,12 @@
                                                               (.-contentSize)
                                                               (.-height))]
                                                     (set-layout-height h))
-                         :on-submit-editing      #(dispatch [:send-chat-message])
+                         :on-submit-editing      #(dispatch [:send-current-message])
                          :on-focus               #(do (dispatch [:set-chat-ui-props :input-focused? true])
                                                       (dispatch [:set-chat-ui-props :show-emoji? false]))
                          :style                  style/input-view}]
-            [text {:style     style/invisible-input-text
-                   :on-layout #(let [w (-> (.-nativeEvent %)
-                                           (.-layout)
-                                           (.-width))]
-                                 (set-layout-width w))}
-             (utils/safe-trim @default-value)]
+            [invisible-input {:value            @default-value
+                              :set-layout-width set-layout-width}]
             [input-helper {:command command
                            :width   width}]
             (when-not command
@@ -81,6 +87,15 @@
                                                    (dismiss-keyboard!))}
                [view
                 [icon :smile style/input-emoji-icon]]])]))})))
+
+(defview input-container []
+  [command-complete? [:command-complete?]]
+  [view style/input-container
+   [input-view]
+   (when command-complete?
+     [touchable-highlight {:on-press #(dispatch [:send-current-message])}
+      [view style/send-message-container
+       [icon :arrow_top style/send-message-icon]]])])
 
 (defview container []
   [margin [:chat-input-margin]
@@ -97,6 +112,6 @@
     [view (style/container selected-chat-command)
      (when-not selected-chat-command
        [commands-view])
-     [input-view selected-chat-command]]
+     [input-container]]
     (when show-emoji?
       [emoji/emoji-view])]])

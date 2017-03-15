@@ -5,6 +5,7 @@
 (def color-input "#edf1f3")
 (def color-input-helper-text "rgb(182, 189, 194)")
 (def color-command "#70777d")
+(def color-send "rgb(98, 143, 227)")
 
 (def max-input-height 66)
 (def min-input-height 38)
@@ -21,6 +22,9 @@
   {:background-color common/color-white
    :flex-direction   :column
    :padding          (if command? 8 16)})
+
+(def input-container
+  {:flex-direction :row})
 
 (defn input-root [content-height command?]
   {:align-items      :center
@@ -64,12 +68,20 @@
    :align-items    :center})
 
 (def commands-list-icon
-  {:height        13
-   :margin-left   5
-   :margin-right  5
-   :margin-top    4
-   :margin-bottom 4
-   :width         16})
+  {:height 24
+   :width  24})
+
+(def send-message-container
+  {:background-color color-send
+   :width            38
+   :height           38
+   :border-radius    19
+   :padding          7
+   :margin-left      8})
+
+(def send-message-icon
+  {:height 24
+   :width  24})
 
 (def commands
   {:flex-direction :row
