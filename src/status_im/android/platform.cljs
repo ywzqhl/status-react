@@ -70,8 +70,6 @@
                                           :font-size 14}
                            :subtitle-count {:color     styles/color-gray4
                                             :font-size 14}
-                           :info-container {:margin-left 16}
-                           :contact-inner-container {:height 56}
                            :contact-list-spacing {:background-color styles/color-white
                                                   :height           8}
                            :separator    {:height 0}
@@ -90,11 +88,7 @@
                            :show-all-text {:fontSize       14
                                            :color          styles/color-blue
                                            :letter-spacing 0.5}
-                           :show-all-text-font :medium
-                           :contact-container {:padding-right 16}
-                           :name-text {:fontSize       16
-                                       :line-height    24
-                                       :color          styles/text1-color}}
+                           :show-all-text-font :medium}
    :new-group             {:group-name-text {:font-size 12}
                            :members-text {:font-size 14}
                            :members-text-count  {:font-size 14}
@@ -162,11 +156,9 @@
    :list-selection-fn            show-dialog
    :tabs                         {:tab-shadows? true}
    :chats                        {:action-button?       true
-                                  :new-chat-in-toolbar? false
                                   :render-separator?    false}
    :uppercase?                   true
-   :contacts                     {:action-button?          true
-                                  :new-contact-in-toolbar? false
+   :contacts                     {:new-contact-in-toolbar? false
                                   :group-block-shadows?    true}
    :discover                     {:uppercase-subtitles? false}
    :public-group-icon-container  {:margin-top 4}

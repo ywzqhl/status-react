@@ -13,8 +13,7 @@
                                                 http-bridge]]
             [status-im.components.main-tabs :refer [main-tabs]]
             [status-im.components.context-menu :refer [menu-context]]
-            [status-im.contacts.search-results :refer [contacts-search-results]]
-            [status-im.contacts.views.contact-list :refer [contact-list]]
+            [status-im.contacts.views.group-contacts-list :refer [group-contacts-list]]
             [status-im.contacts.views.new-contact :refer [new-contact]]
             [status-im.qr-scanner.screen :refer [qr-scanner]]
             [status-im.discover.search-results :refer [discover-search-results]]
@@ -126,8 +125,7 @@
                                :group-settings group-settings
                                :contact-list main-tabs
                                :contact-toggle-list contact-toggle-list
-                               :contact-list-search-results contacts-search-results
-                               :group-contacts contact-list
+                               :group-contacts-list group-contacts-list
                                :reorder-groups reorder-groups
                                :new-contact new-contact
                                :qr-scanner qr-scanner

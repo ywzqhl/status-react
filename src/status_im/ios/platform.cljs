@@ -81,8 +81,6 @@
                                           :height           1
                                           :background-color styles/color-gray5
                                           :opacity          0.5}
-                           :info-container {:margin-left 16}
-                           :contact-inner-container {:height 63}
                            :icon-check   {:border-radius 50
                                           :width         24
                                           :height        24}
@@ -98,12 +96,7 @@
                            :show-all-text {:fontSize       16
                                            :color          styles/color-gray4
                                            :letter-spacing -0.2}
-                           :show-all-text-font :default
-                           :contact-container {:padding-right 16}
-                           :name-text {:fontSize       17
-                                       :line-height    20
-                                       :letter-spacing -0.2
-                                       :color          styles/text1-color}}
+                           :show-all-text-font :default}
    :new-group             {:group-name-text {:font-size 13}
                            :members-text {:letter-spacing -0.2
                                           :font-size      16}
@@ -192,11 +185,9 @@
    :list-selection-fn            show-action-sheet
    :tabs                         {:tab-shadows? false}
    :chats                        {:action-button?       false
-                                  :new-chat-in-toolbar? true
                                   :render-separator?    true}
    :uppercase?                   false
-   :contacts                     {:action-button?          false
-                                  :new-contact-in-toolbar? true
+   :contacts                     {:new-contact-in-toolbar? true
                                   :group-block-shadows?    false}
    :discover                     {:uppercase-subtitles? true}
    :public-group-icon-container  {:margin-top 2}

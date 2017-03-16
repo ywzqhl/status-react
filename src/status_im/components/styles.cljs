@@ -36,6 +36,11 @@
 (def flex
   {:flex 1})
 
+(def icon-default
+  {:width  24
+   :height 24})
+
+;;TODO after ui refresh all icons have same size 24x24, so we need only icon-default
 (def icon-search
   {:width  24
    :height 24})
@@ -48,10 +53,6 @@
 (def icon-back
   {:width  8
    :height 14})
-
-(def icon-default
-  {:width  24
-   :height 24})
 
 (def icon-add
   {:width  14

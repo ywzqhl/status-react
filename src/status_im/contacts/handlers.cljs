@@ -16,7 +16,7 @@
             [cljs.reader :refer [read-string]]
             [status-im.utils.js-resources :as js-res]))
 
-(defmethod nav/preload-data! :group-contacts
+(defmethod nav/preload-data! :group-contacts-list
   [db [_ _ group show-search?]]
   (-> db
       (assoc :contacts-group group)

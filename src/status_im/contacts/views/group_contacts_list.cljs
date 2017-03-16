@@ -1,74 +1,33 @@
-(ns status-im.contacts.views.contact-list
+(ns status-im.contacts.views.group-contacts-list
   (:require-macros [status-im.utils.views :refer [defview]])
-  (:require [re-frame.core :refer [subscribe dispatch dispatch-sync]]
+  (:require [re-frame.core :refer [dispatch]]
+            [status-im.contacts.screen :refer [contact-options contact-on-press]]
             [status-im.components.react :refer [view text
                                                 image
                                                 icon
                                                 touchable-highlight
                                                 list-view
                                                 list-item]]
-            [status-im.contacts.views.contact :refer [contact-view]]
+            [status-im.components.contact.contact :refer [contact-view]]
+            [status-im.components.contact.styles :as cvs]
             [status-im.components.text-field.view :refer [text-field]]
             [status-im.components.status-bar :refer [status-bar]]
             [status-im.components.toolbar-new.view :refer [toolbar-with-search toolbar]]
             [status-im.components.toolbar-new.actions :as act]
-            [status-im.components.toolbar-new.styles :refer [toolbar-background1]]
             [status-im.components.drawer.view :refer [drawer-view open-drawer]]
-            [status-im.components.image-button.view :refer [scan-button]]
             [status-im.contacts.styles :as st]
             [status-im.utils.listview :as lw]
-            [status-im.i18n :refer [label]]
-            [status-im.utils.platform :refer [platform-specific]]))
-
-(defn new-group-chat-view []
-  [view
-   [touchable-highlight
-    {:on-press #(dispatch [:open-contact-toggle-list :chat-group])}
-    [view st/contact-container
-     [view st/option-inner-container
-      [view st/option-inner
-       [image {:source {:uri :icon_private_group_big}
-               :style  st/group-icon}]]
-      [view st/info-container
-       [text {:style st/name-text}
-        (label :t/new-group-chat)]]]]]
-   [touchable-highlight
-    {:on-press #(dispatch [:navigate-to :new-public-group])}
-    [view st/contact-container
-     [view st/option-inner-container
-      [view st/option-inner
-       [image {:source {:uri :icon_public_group_big}
-               :style  st/group-icon}]]
-      [view st/info-container
-       [text {:style st/name-text}
-        (label :t/new-public-group-chat)]]]]]])
-
-(defn render-row [chat-modal click-handler action params group edit?]
-  (fn [row _ _]
-    (list-item
-      ^{:key row}
-      [contact-view {:contact        row
-                     :letter?        chat-modal
-                     :extended?      edit?
-                     :extend-options (when group
-                                       [{:value #(dispatch [:hide-contact row])
-                                         :text (label :t/delete-contact)}
-                                        {:value #(dispatch [:remove-contact-from-group
-                                                            (:whisper-identity row)
-                                                            (:group-id group)])
-                                         :text (label :t/remove-from-group)}])
-                     :on-click       (when (and (not edit?) click-handler)
-                                       #(click-handler row action params))}])))
+            [status-im.i18n :refer [label]]))
 
 (defn contact-list-entry [{:keys [click-handler icon icon-style label]}]
   [touchable-highlight
    {:on-press click-handler}
-   [view st/contact-container
-    [view st/contact-inner-container
+   [view cvs/contact-container
+    [view cvs/contact-inner-container
      [image {:source {:uri icon}
              :style  icon-style}]
-     [view st/info-container
-      [text {:style           st/name-text
+     [view cvs/info-container
+      [text {:style           cvs/name-text
              :number-of-lines 1}
        label]]]]])
 
@@ -117,27 +76,32 @@
              [view st/contact-item-separator-wrapper
               [view st/contact-item-separator]]))
 
-(defview contacts-list-view [group modal click-handler action edit?]
+(defn render-row [click-handler action params group edit?]
+  (fn [row _ _]
+    (list-item
+      ^{:key row}
+      [contact-view {:contact        row
+                     :extended?      edit?
+                     :extend-options (contact-options row group)
+                     :on-press       (if click-handler
+                                       #(click-handler row action params)
+                                       contact-on-press)}])))
+
+(defview contacts-list-view [group click-handler action edit?]
   [contacts [:all-added-group-contacts-filtered (:group-id group)]
-   params [:get :contacts-click-params]]
-  (let [show-new-group-chat? (and (= group :people)
-                                  (get-in platform-specific [:chats :new-chat-in-toolbar?]))]
+   params [:get :contacts-click-params]
     (when contacts
       [list-view {:dataSource                (lw/to-datasource contacts)
                   :enableEmptySections       true
-                  :renderRow                 (render-row modal click-handler action params group edit?)
+                  :renderRow                 (render-row click-handler action params group edit?)
                   :bounces                   false
                   :keyboardShouldPersistTaps true
-                  :renderHeader              #(list-item
-                                                [view
-                                                 (if show-new-group-chat?
-                                                   [new-group-chat-view]
-                                                   [view st/contact-list-spacing])])
+                  :renderHeader              #(list-item [view [view st/contact-list-spacing]])
                   :renderFooter              #(list-item [view st/contact-list-spacing])
                   :renderSeparator           render-separator
-                  :style                     st/contacts-list}])))
+                  :style                     st/contacts-list}])])
 
-(defview contact-list []
+(defview group-contacts-list []
   [action [:get :contacts-click-action]
    modal [:get :modal]
    edit? [:get-in [:contact-list-ui-props :edit?]]
@@ -154,4 +118,4 @@
     ;; todo add stub
     (when modal
       [modal-view action click-handler])
-    [contacts-list-view group modal click-handler action edit?]]])
+    [contacts-list-view group click-handler action edit?]]])

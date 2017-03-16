@@ -85,12 +85,6 @@
 (def contact-item-separator
   (get-in p/platform-specific [:component-styles :contacts :separator]))
 
-(def contact-container
-  (merge (get-in p/platform-specific [:component-styles :contacts :contact-container])
-         {:flex-direction   :row
-          :align-items      :center
-          :background-color color-white}))
-
 (def letter-container
   {:paddingTop  11
    :paddingLeft 20
@@ -126,40 +120,6 @@
 
 (def contact-list-spacing
   (get-in p/platform-specific [:component-styles :contacts :contact-list-spacing]))
-
-(def contact-inner-container
-  (merge (get-in p/platform-specific [:component-styles :contacts :contact-inner-container])
-         {:flex            1
-          :flexDirection   :row
-          :align-items     :center
-          :padding-left    16
-          :backgroundColor color-white}))
-
-(def info-container
-  (merge (get-in p/platform-specific [:component-styles :contacts :info-container])
-         {:flex           1
-          :flexDirection  :column}))
-
-(def name-text
-  (get-in p/platform-specific [:component-styles :contacts :name-text]))
-
-(def info-text
-  {:marginTop 1
-   :fontSize  12
-   :color     text2-color})
-
-(def more-btn
-  {:width          24
-   :height         24
-   :alignItems     :center
-   :justifyContent :center})
-
-(def search-btn
-  {:width          24
-   :height         56
-   :margin-right   24
-   :alignItems     :center
-   :justifyContent :center})
 
 ; New contact
 
@@ -218,6 +178,3 @@
    :background-color color-white
    :align-items      :center
    :justify-content  :center})
-
-(def delete-contact-text
-  {:color color-light-red})

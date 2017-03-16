@@ -21,8 +21,8 @@
             [status-im.components.drawer.view :refer [open-drawer]]
             [status-im.components.icons.custom-icons :refer [ion-icon]]
             [status-im.components.context-menu :refer [context-menu]]
-            [status-im.contacts.views.contact :refer [contact-view]]
-            [status-im.utils.platform :refer [platform-specific]]
+            [status-im.components.contact.contact :refer [contact-view]]
+            [status-im.utils.platform :refer [platform-specific ios? android?]]
             [status-im.i18n :refer [label]]
             [status-im.contacts.styles :as st]
             [status-im.components.styles :refer [color-blue
@@ -38,7 +38,7 @@
 
 (defn toolbar-actions []
   (let [new-contact? (get-in platform-specific [:contacts :new-contact-in-toolbar?])]
-    [(act/search #(dispatch [:navigate-to :group-contacts nil :show-search]))
+    [(act/search #(dispatch [:navigate-to :group-contacts-list nil :show-search]))
      (act/opts (if new-contact? toolbar-options (rest toolbar-options)))]))
 
 (defn toolbar-view []
@@ -54,7 +54,7 @@
 (defn options-btn [group]
   (let [options [{:value #(dispatch [:navigate-to :edit-group group :contact-group])
                   :text (label :t/edit-group)}]]
-    [view st/more-btn
+    [view
      [context-menu
       [icon :options_gray]
       options]]))
@@ -81,7 +81,39 @@
   [linear-gradient {:style  st/contact-group-header-gradient-top
                     :colors st/contact-group-header-gradient-top-colors}])
 
-(defn contact-group-form [{:keys [contacts contacts-count group edit? click-handler]}]
+(defn contact-options [contact group]
+  (let [options [{:value        #(dispatch [:hide-contact contact])
+                  :text         (label :t/delete-contact)
+                  :destructive? true}]]
+    (if group
+      (conj options
+            {:value #(dispatch [:remove-contact-from-group
+                                (:whisper-identity contact)
+                                (:group-id group)])
+             :text  (label :t/remove-from-group)})
+      options)))
+
+(defn contact-on-press [{:keys [whisper-identity] :as contact}]
+  (dispatch [:send-contact-request! contact])
+  (dispatch [:start-chat whisper-identity {} :navigation-replace]))
+
+
+(defn contact-list [contacts edit? group]
+  (doall
+    (map (fn [contact]
+           ^{:key contact}
+           [view
+            [contact-view
+             {:contact        contact
+              :extended?      edit?
+              :on-press       contact-on-press
+              :extend-options (contact-options contact group)}]
+            (when-not (= contact (last contacts))
+              [view st/contact-item-separator-wrapper
+               [view st/contact-item-separator]])])
+         contacts)))
+
+(defn contact-group-form [{:keys [contacts contacts-count group edit?]}]
   (let [shadows? (get-in platform-specific [:contacts :group-block-shadows?])
         subtitle (:name group)]
     [view st/contact-group
@@ -91,26 +123,7 @@
          [group-top-view])
      [view st/contacts-list
       [view st/contact-list-spacing]
-      (doall
-        (map (fn [contact]
-               ^{:key contact}
-               [view
-                [contact-view
-                 {:contact        contact
-                  :extended?      edit?
-                  :on-click       (when-not edit? click-handler)
-                  :extend-options (when group
-                                   [{:value #(dispatch [:hide-contact contact])
-                                     :text (label :t/delete-contact)
-                                     :style st/delete-contact-text}
-                                    {:value #(dispatch [:remove-contact-from-group
-                                                        (:whisper-identity contact)
-                                                        (:group-id group)])
-                                     :text (label :t/remove-from-group)}])}]
-                (when-not (= contact (last contacts))
-                  [view st/contact-item-separator-wrapper
-                   [view st/contact-item-separator]])])
-             contacts))]
+      [contact-list contacts edit? group]]
      (when (< contacts-limit contacts-count)
        [view
         [view st/contact-item-separator-wrapper
@@ -119,7 +132,7 @@
          [touchable-highlight {:on-press #(do
                                             (when edit?
                                               (dispatch [:set-in [:contact-list-ui-props :edit?] true]))
-                                            (dispatch [:navigate-to :group-contacts group]))}
+                                            (dispatch [:navigate-to :group-contacts-list group]))}
           [view
            [text {:style st/show-all-text
                   :uppercase? (get-in platform-specific [:uppercase?])
@@ -150,7 +163,6 @@
 (defview contact-list [current-view?]
   [contacts             [:get-added-contacts-with-limit contacts-limit]
    contacts-count       [:added-contacts-count]
-   click-handler        [:get :contacts-click-handler]
    edit?                [:get-in [:contacts-ui-props :edit?]]
    groups               [:all-added-groups]]
   [view st/contacts-list-container
@@ -162,15 +174,13 @@
       (when (pos? contacts-count)
         [contact-group-form {:contacts       contacts
                              :contacts-count contacts-count
-                             :edit?          edit?
-                             :click-handler  click-handler}])
+                             :edit?          edit?}])
       (for [group groups]
         ^{:key group}
         [contact-group-view {:group          group
-                             :edit?          edit?
-                             :click-handler  click-handler}])]
+                             :edit?          edit?}])]
      [view st/empty-contact-groups
       [react/icon :group_big st/empty-contacts-icon]
       [text {:style st/empty-contacts-text} (label :t/no-contacts)]])
-   (when (and (not edit?) (get-in platform-specific [:contacts :action-button?]))
+   (when (and (not edit?) android?)
        [contacts-action-button])])

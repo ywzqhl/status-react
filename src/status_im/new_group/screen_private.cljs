@@ -1,7 +1,7 @@
 (ns status-im.new-group.screen-private
   (:require-macros [status-im.utils.views :refer [defview]])
   (:require [re-frame.core :refer [dispatch]]
-            [status-im.contacts.views.contact :refer [contact-view]]
+            [status-im.components.contact.contact :refer [contact-view]]
             [status-im.components.react :refer [view
                                                 scroll-view
                                                 list-view
@@ -75,8 +75,7 @@
 (defn render-row [row _ _]
   (list-item
     ^{:key row}
-    [contact-view {:contact   row
-                   :on-click  #()}]))
+    [contact-view {:contact row}]))
 
 (defview new-group []
   [contacts [:selected-group-contacts]
