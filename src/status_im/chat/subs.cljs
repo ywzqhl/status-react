@@ -77,11 +77,9 @@
 (register-sub
   :selected-chat-command
   (fn [db [_ chat-id]]
-    (let [chat-id          (or chat-id (@db :current-chat-id))
-          possible-actions (subscribe [:possible-chat-actions chat-id])
-          input-text       (subscribe [:chat :input-text chat-id])]
+    (let [chat-id (or chat-id (@db :current-chat-id))]
       (reaction
-        (input-model/selected-chat-command @input-text @possible-actions)))))
+        (input-model/selected-chat-command @db chat-id)))))
 
 (register-sub
   :current-chat-argument-position

@@ -69,7 +69,9 @@
                          :on-blur                #(do (dispatch [:set-chat-ui-props :input-focused? false])
                                                       (set-layout-height 0))
                          :on-change-text         #(do (dispatch [:set-chat-input-text %])
-                                                      (dispatch [:load-chat-parameter-box (:command command)]))
+                                                      (dispatch [:load-chat-parameter-box (:command command)])
+                                                      (when (not command)
+                                                        (dispatch [:set-chat-input-metadata nil])))
                          :on-content-size-change #(let [h (-> (.-nativeEvent %)
                                                               (.-contentSize)
                                                               (.-height))]

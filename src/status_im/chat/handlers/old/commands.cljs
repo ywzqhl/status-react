@@ -14,14 +14,6 @@
             [status-im.utils.platform :as platform]
             [taoensso.timbre :as log]))
 
-(register-handler
-  :set-response-chat-command
-  (u/side-effect!
-    (fn [{:keys [current-chat-id] :as db} [_ to-message-id command-key]]
-      (when-let [{response-name :name} (get-in db [:chats current-chat-id :responses command-key])]
-        (dispatch [:select-chat-input-command response-name])
-        (assoc db [:chats current-chat-id :to-message-id] to-message-id)))))
-
 
 
 
@@ -260,6 +252,7 @@
                           parameters
                           #(dispatch [::validate! command-input data %]))))))
 
+;; TODO(alwx): check this handler
 (register-handler :request-command-preview
   (u/side-effect!
     (fn [{:keys [chats]} [_ {{:keys [command params content-command type]} :content

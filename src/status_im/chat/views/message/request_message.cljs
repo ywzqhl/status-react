@@ -10,14 +10,16 @@
             [status-im.chat.styles.message.message :as st]
             [status-im.accessibility-ids :as id]
             [status-im.models.commands :refer [parse-command-request]]
-            [status-im.components.animation :as anim]))
+            [status-im.components.animation :as anim]
+            [taoensso.timbre :as log]))
 
 (def request-message-icon-scale-delay 600)
 
 (defn set-chat-command [message-id command]
   (let [command-key (keyword (:name command))
         params      (:set-params command)]
-    (dispatch [:set-response-chat-command message-id command-key params])))
+    (dispatch [:set-chat-input-metadata (assoc params :to-message-id message-id)])
+    (dispatch [:select-chat-input-command command])))
 
 (def min-scale 1)
 (def max-scale 1.3)

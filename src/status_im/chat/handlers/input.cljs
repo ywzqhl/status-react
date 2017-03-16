@@ -4,8 +4,11 @@
             [status-im.chat.constants :as const]
             [status-im.chat.models.input :as input-model]
             [status-im.chat.suggestions :as suggestions]
+            [status-im.components.react :as react-comp]
             [status-im.components.status :as status]
+            [status-im.utils.datetime :as time]
             [status-im.utils.handlers :as handlers]
+            [status-im.utils.random :as random]
             [clojure.string :as str]))
 
 (handlers/register-handler
@@ -52,7 +55,7 @@
   :load-chat-parameter-box
   (handlers/side-effect!
     (fn [{:keys [current-chat-id] :as db} [_ {:keys [name type] :as command}]]
-      (let [parameter-index (input-model/argument-position db)]
+      (let [parameter-index (input-model/argument-position db current-chat-id)]
         (when (and command (> parameter-index -1))
           (let [data   (get-in db [:local-storage current-chat-id])
                 path   [(if (= :command type) :commands :responses)
@@ -77,15 +80,15 @@
 (handlers/register-handler
   ::send-message
   (handlers/side-effect!
-    (fn [{:keys [current-chat-id current-public-key current-account-id] :as db} [_ command-message chat-id]]
-      (let [chat-id (or chat-id current-chat-id)
-            text    (get-in db [:chats chat-id :input-text])
+    (fn [{:keys [current-public-key current-account-id] :as db} [_ command-message chat-id]]
+      (let [text    (get-in db [:chats chat-id :input-text])
             data    {:message  text
                      :command  command-message
                      :chat-id  chat-id
                      :identity current-public-key
                      :address  current-account-id}]
         (dispatch [:set-chat-input-text nil chat-id])
+        (dispatch [:set-chat-input-metadata nil chat-id])
         (cond
           command-message
           (dispatch [:check-commands-handlers! data])
@@ -95,41 +98,52 @@
 (handlers/register-handler
   ::send-command
   (handlers/side-effect!
-    (fn [db [_ command]]
-      (log/debug "ALWX >> send-command" command))))
+    (fn [db [_ command chat-id]]
+      (let [suggestions-trigger (keyword (get-in command [:command :suggestions-trigger]))]
+        (case suggestions-trigger
+          :on-send (do
+                     (dispatch [:invoke-commands-suggestions!])
+                     (react-comp/dismiss-keyboard!))
+          (do
+            (dispatch [:set-chat-input-text nil chat-id])
+            (dispatch [:set-chat-input-metadata nil chat-id])
+            (dispatch [:set-chat-ui-props :sending-disabled? true])
+            (dispatch [::request-command-preview command chat-id])))))))
 
-#_(handlers/register-handler
-  :send-command!
+(handlers/register-handler
+  ::request-command-preview
   (handlers/side-effect!
-    (fn [{:keys [current-chat-id current-account-id] :as db}]
-      (let [{:keys [params] :as command} (commands/get-chat-command db)
-            {:keys [parameter-idx]} (commands/get-command-input db)
-
-            last-parameter? (= (inc parameter-idx) (count params))
-
-            parameters      {:command command :input command-input}
-
-            {:keys [command content]} (command-input db)
-            content'        (content-by-command command content)]
-        (dispatch [:set-command-parameter
-                   {:value     content'
-                    :parameter (para s parameter-idx)}])
-        (if last-parameter?
-          (dispatch [:check-suggestions-trigger! parameters])
-          (dispatch [::start-command-validation!
-                     {:chat-id current-chat-id
-                      :address current-account-id
-                      :handler #(dispatch [:next-command-parameter])}]))))))
+    (fn [db [_ {:keys [command metadata args] :as c} chat-id]]
+      (let [message-id      (random/id)
+            params          (input-model/args->params c)
+            command-message {:command    command
+                             :params     params
+                             :to-message (:to-message-id metadata)
+                             :created-at (time/now-ms)
+                             :id         message-id
+                             :chat-id    chat-id}
+            request-data    {:message-id   message-id
+                             :chat-id      chat-id
+                             :content      {:command (:name command)
+                                            :params  {:metadata metadata
+                                                      :args     params}
+                                            :type    (:type command)}
+                             :on-requested #(dispatch [::send-message command-message chat-id])}]
+        (dispatch [:request-command-preview request-data])))))
 
 (handlers/register-handler
   :send-current-message
   (handlers/side-effect!
     (fn [{:keys [current-chat-id] :as db} [_ chat-id]]
-      (let [chat-id          (or chat-id current-chat-id)
-            possible-actions (input-model/possible-chat-actions db chat-id)
-            input-text       (get-in db [:chats chat-id :input-text])
-            chat-command     (input-model/selected-chat-command input-text possible-actions)]
+      (let [chat-id      (or chat-id current-chat-id)
+            chat-command (input-model/selected-chat-command db chat-id)]
         (if chat-command
           (when (input-model/command-complete? chat-command)
-            (dispatch [::send-command chat-command]))
+            (dispatch [::send-command chat-command chat-id]))
           (dispatch [::send-message nil chat-id]))))))
+
+(handlers/register-handler
+  :set-chat-input-metadata
+  (fn [{:keys [current-chat-id] :as db} [_ data chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (assoc-in db [:chats chat-id :input-metadata] data))))

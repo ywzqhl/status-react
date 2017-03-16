@@ -1755,13 +1755,13 @@ status.command({
     preview: function (params) {
         return status.components.text(
             {},
-            params.url
+            params.args.url
         );
     },
     shortPreview: function (params) {
         return status.components.text(
             {},
-            I18n.t('faucet_title') + ": " + params.url
+            I18n.t('faucet_title') + ": " + params.args.url
         );
     },
     validator: function (params, context) {

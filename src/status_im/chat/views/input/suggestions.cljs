@@ -7,6 +7,7 @@
                                                 text
                                                 icon]]
             [status-im.chat.styles.input.suggestions :as style]
+            [status-im.data-store.messages :as messages]
             [status-im.i18n :refer [label]]
             [taoensso.timbre :as log]))
 
@@ -20,19 +21,23 @@
     [text {:style style/item-suggestion-description}
      description]]])
 
-(defview request-item [index {:keys [type message-id]}]
+(defview request-item [index {:keys [type message-id] :as rr}]
   [{:keys [name description] :as response} [:get-response type]
    {:keys [chat-id]} [:get-current-chat]]
-  [suggestion-item {:on-press    #(do (dispatch [:set-response-chat-command message-id type])
-                                      (dispatch [:select-chat-input-command response]))
-                    :name        name
-                    :description description}])
+  [suggestion-item
+   {:on-press    #(let [{:keys [params]} (messages/get-message-content-by-id message-id)]
+                    (dispatch [:set-chat-input-metadata (assoc params :to-message-id message-id)])
+                    (dispatch [:select-chat-input-command response]))
+    :name        name
+    :description description}])
 
-(defview command-item [index [command {:keys [name description] :as command}]]
+(defview command-item [index [_ {:keys [name description] :as command}]]
   []
-  [suggestion-item {:on-press    #(dispatch [:select-chat-input-command command])
-                    :name        name
-                    :description description}])
+  [suggestion-item
+   {:on-press    #(do (dispatch [:set-chat-input-metadata nil])
+                      (dispatch [:select-chat-input-command command]))
+    :name        name
+    :description description}])
 
 (defn item-title [top-padding? s]
   [view (style/item-title-container top-padding?)
