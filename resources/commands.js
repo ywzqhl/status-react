@@ -694,13 +694,15 @@ status.command({
             }
         );
 
-        return status.components.view({}, [text, image]);
+        return {markup: status.components.view({}, [text, image])};
     },
     shortPreview: function(params) {
-        return status.components.text(
+        return {
+          markup: status.components.text(
             {},
             I18n.t('location_title') + ": " + params.address
-        );
+          )
+        };
     }
 }).param({
     name: "address",
@@ -855,25 +857,29 @@ var send = {
             )]
         );
 
-        return status.components.view(
+        return {
+          markup: status.components.view(
             {
-                style: {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginTop: 8,
-                    marginBottom: 8
-                }
+              style: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 8,
+                marginBottom: 8
+              }
             },
             [amount, currency]
-        );
+          )
+        };
     },
     shortPreview: function (params, context) {
-        return status.components.text(
-            {},
-            I18n.t('send_title') + ": "
-            + status.localizeNumber(params.amount, context.delimiter, context.separator)
-            + " ETH"
-        );
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('send_title') + ": "
+          + status.localizeNumber(params.amount, context.delimiter, context.separator)
+          + " ETH"
+        )
+      };
     },
     handler: sendTransaction,
     validator: validateSend
@@ -904,17 +910,24 @@ status.command({
         };
     },
     preview: function (params, context) {
-        return I18n.t('request_requesting')
-            + status.localizeNumber(params.amount, context.delimiter, context.separator)
-            + " ETH";
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('request_requesting') + " "
+          + status.localizeNumber(params.amount, context.delimiter, context.separator)
+          + " ETH"
+        )
+      };
     },
     shortPreview: function (params, context) {
-        return status.components.text(
-            {},
-            I18n.t('request_requesting') + " "
-            + status.localizeNumber(params.amount, context.delimiter, context.separator)
-            + " ETH"
-        );
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('request_requesting') + " "
+          + status.localizeNumber(params.amount, context.delimiter, context.separator)
+          + " ETH"
+        )
+      };
     },
     validator: function(params) {
         try {

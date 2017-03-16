@@ -96,24 +96,38 @@
           (dispatch [:prepare-message data]))))))
 
 (handlers/register-handler
-  ::send-command
+  ::proceed-command
   (handlers/side-effect!
     (fn [db [_ command chat-id]]
-      (let [suggestions-trigger (keyword (get-in command [:command :suggestions-trigger]))]
-        (case suggestions-trigger
-          :on-send (do
-                     (dispatch [:invoke-commands-suggestions!])
-                     (react-comp/dismiss-keyboard!))
-          (do
-            (dispatch [:set-chat-input-text nil chat-id])
-            (dispatch [:set-chat-input-metadata nil chat-id])
-            (dispatch [:set-chat-ui-props :sending-disabled? true])
-            (dispatch [::request-command-preview command chat-id])))))))
+      (dispatch [::request-command-data
+                 {:command   command
+                  :chat-id   chat-id
+                  :data-type :on-send
+                  :after     #(dispatch [::send-command %2 command chat-id])}]))))
 
 (handlers/register-handler
-  ::request-command-preview
+  ::send-command
   (handlers/side-effect!
-    (fn [db [_ {:keys [command metadata args] :as c} chat-id]]
+    (fn [db [_ on-send command chat-id]]
+      (if on-send
+        (do
+          (dispatch [:set-chat-ui-props :result-box on-send])
+          (react-comp/dismiss-keyboard!))
+        (do
+          (dispatch [:set-chat-input-text nil chat-id])
+          (dispatch [:set-chat-input-metadata nil chat-id])
+          (dispatch [:set-chat-ui-props :sending-disabled? true])
+          (dispatch [::request-command-data
+                     {:command   command
+                      :chat-id   chat-id
+                      :data-type :preview
+                      :after     #(dispatch [::send-message % chat-id])}]))))))
+
+(handlers/register-handler
+  ::request-command-data
+  (handlers/side-effect!
+    (fn [db [_ {{:keys [command metadata args] :as c} :command
+                :keys [chat-id data-type after]}]]
       (let [message-id      (random/id)
             params          (input-model/args->params c)
             command-message {:command    command
@@ -128,8 +142,8 @@
                                             :params  {:metadata metadata
                                                       :args     params}
                                             :type    (:type command)}
-                             :on-requested #(dispatch [::send-message command-message chat-id])}]
-        (dispatch [:request-command-preview request-data])))))
+                             :on-requested #(after command-message %)}]
+        (dispatch [:request-command-data request-data data-type])))))
 
 (handlers/register-handler
   :send-current-message
@@ -139,7 +153,7 @@
             chat-command (input-model/selected-chat-command db chat-id)]
         (if chat-command
           (when (input-model/command-complete? chat-command)
-            (dispatch [::send-command chat-command chat-id]))
+            (dispatch [::proceed-command chat-command chat-id]))
           (dispatch [::send-message nil chat-id]))))))
 
 (handlers/register-handler

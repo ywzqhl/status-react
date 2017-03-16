@@ -294,7 +294,7 @@
      (doseq [{:keys [content] :as message} messages]
        (when (and (:command content)
                   (not (:content content)))
-         (dispatch [:request-command-preview (assoc message :chat-id current-chat-id)])))
+         (dispatch [:request-command-data (assoc message :chat-id current-chat-id)])))
      (assoc db :messages messages))))
 
 (defn init-chat

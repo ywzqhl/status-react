@@ -74,7 +74,7 @@
         commands-atom       (subscribe [:get-responses])
         answered?           (subscribe [:is-request-answered? message-id])
         status-initialized? (subscribe [:get :status-module-initialized?])
-        preview             (subscribe [:get-in [:message-data :preview message-id]])]
+        markup              (subscribe [:get-in [:message-data :preview message-id :markup]])]
     (fn [{:keys [message-id content from incoming-group]}]
       (let [commands @commands-atom
             params   (:params content)
@@ -91,9 +91,9 @@
              [text {:style st/command-request-from-text
                     :font  :default}
               from])
-           (if (and @preview
-                    (not (string? @preview)))
-             [view @preview]
+           (if (and @markup
+                    (not (string? @markup)))
+             [view @markup]
              [text {:style     st/style-message-text
                     :on-layout #(reset! top-offset {:specified? true
                                                     :value      (-> (.-nativeEvent %)
@@ -101,7 +101,7 @@
                                                                     (.-height)  
                                                                     (> 25))})
                     :font      :default}
-              (or @preview content)])]]
+              (or @markup content)])]]
          (when (:request-text command)
            [view st/command-request-text-view
             [text {:style st/style-sub-text

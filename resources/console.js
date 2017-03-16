@@ -1753,16 +1753,20 @@ status.command({
         placeholder: I18n.t('faucet_placeholder')
     }],
     preview: function (params) {
-        return status.components.text(
-            {},
-            params.args.url
-        );
+      return {
+        markup: status.components.text(
+          {},
+          params.args.url
+        )
+      };
     },
     shortPreview: function (params) {
-        return status.components.text(
-            {},
-            I18n.t('faucet_title') + ": " + params.args.url
-        );
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('faucet_title') + ": " + params.args.url
+        )
+      };
     },
     validator: function (params, context) {
         var f = faucets.map(function (entry) {
@@ -1819,16 +1823,20 @@ status.command({
         type: status.types.TEXT
     }],
     preview: function (params) {
-        return status.components.text(
-            {},
-            I18n.t('debug_mode_title') + ": " + params.mode
-        );
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('debug_mode_title') + ": " + params.mode
+        )
+      };
     },
     shortPreview: function (params) {
-        return status.components.text(
-            {},
-            I18n.t('debug_mode_title') + ": " + params.mode
-        );
+      return {
+        markup: status.components.text(
+          {},
+          I18n.t('debug_mode_title') + ": " + params.mode
+        )
+      };
     }
 });
 
@@ -1849,11 +1857,26 @@ status.command({
     hidden: true,
     fullscreen: true,
     suggestionsTrigger: 'on-send',
+    title: 'Browsing',
     params: [{
         name: "url",
         suggestions: browseSuggestions,
+        placeholder: "url",
         type: status.types.TEXT
-    }]
+    }],
+    onSend: function(params, context) {
+      var style = {
+        marginTop: 5,
+        marginHorizontal: 0,
+        fontSize: 14,
+        color: "black"
+      };
+
+      return {
+          title: "My fucking app",
+          markup: status.components.text({style: style}, "Test onSend")
+      };
+    }
 });
 
 
@@ -1951,7 +1974,7 @@ status.response({
             style.letterSpacing = 1;
         }
 
-        return status.components.text({style: style}, "●●●●●●●●●●");
+        return {markup: status.components.text({style: style}, "●●●●●●●●●●")};
     }
 });
 

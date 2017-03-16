@@ -13,6 +13,7 @@
                                                 dismiss-keyboard!]]
             [status-im.chat.views.input.emoji :as emoji]
             [status-im.chat.views.input.parameter-box :as parameter-box]
+            [status-im.chat.views.input.result-box :as result-box]
             [status-im.chat.views.input.suggestions :as suggestions]
             [status-im.chat.styles.input.input :as style]
             [status-im.chat.utils :as utils]))
@@ -105,6 +106,7 @@
    selected-chat-command [:selected-chat-command]]
   [view
    [parameter-box/parameter-box-view]
+   [result-box/result-box-view]
    [suggestions/suggestions-view]
    [view {:style     (style/root margin)
           :on-layout #(let [h (-> (.-nativeEvent %)

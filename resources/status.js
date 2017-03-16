@@ -34,6 +34,7 @@ Command.prototype.create = function (com) {
     this.preview = com.preview;
     this["short-preview"] = com.shortPreview;
     this["suggestions-trigger"] = com.suggestionsTrigger || "on-change";
+    this["on-send"] = com.onSend;
     this.fullscreen = com.fullscreen;
     this.request = com.request;
     this.addToCatalog();
