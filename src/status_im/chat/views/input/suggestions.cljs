@@ -25,17 +25,16 @@
   [{:keys [name description] :as response} [:get-response type]
    {:keys [chat-id]} [:get-current-chat]]
   [suggestion-item
-   {:on-press    #(let [{:keys [params]} (messages/get-message-content-by-id message-id)]
-                    (dispatch [:set-chat-input-metadata (assoc params :to-message-id message-id)])
-                    (dispatch [:select-chat-input-command response]))
+   {:on-press    #(let [{:keys [params]} (messages/get-message-content-by-id message-id)
+                        metadata (assoc params :to-message-id message-id)]
+                    (dispatch [:select-chat-input-command response metadata]))
     :name        name
     :description description}])
 
 (defview command-item [index [_ {:keys [name description] :as command}]]
   []
   [suggestion-item
-   {:on-press    #(do (dispatch [:set-chat-input-metadata nil])
-                      (dispatch [:select-chat-input-command command]))
+   {:on-press    #(dispatch [:select-chat-input-command command nil])
     :name        name
     :description description}])
 

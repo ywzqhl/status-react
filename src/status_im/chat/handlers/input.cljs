@@ -21,10 +21,18 @@
 (handlers/register-handler
   :select-chat-input-command
   (handlers/side-effect!
-    (fn [{:keys [current-chat-id] :as db} [_ {:keys [name] :as command}]]
+    (fn [{:keys [current-chat-id] :as db} [_ {:keys [name] :as command} metadata]]
       (dispatch [:set-chat-input-text (str const/command-char name const/spacing-char)])
+      (dispatch [:set-chat-input-metadata metadata])
       (dispatch [:set-chat-ui-props :show-suggestions? false])
+      (dispatch [:set-chat-ui-props :result-box nil])
       (dispatch [:load-chat-parameter-box command 0]))))
+
+(handlers/register-handler
+  :set-chat-input-metadata
+  (fn [{:keys [current-chat-id] :as db} [_ data chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (assoc-in db [:chats chat-id :input-metadata] data))))
 
 (handlers/register-handler
   :set-command-argument
@@ -155,9 +163,3 @@
           (when (input-model/command-complete? chat-command)
             (dispatch [::proceed-command chat-command chat-id]))
           (dispatch [::send-message nil chat-id]))))))
-
-(handlers/register-handler
-  :set-chat-input-metadata
-  (fn [{:keys [current-chat-id] :as db} [_ data chat-id]]
-    (let [chat-id (or chat-id current-chat-id)]
-      (assoc-in db [:chats chat-id :input-metadata] data))))

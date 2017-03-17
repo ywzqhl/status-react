@@ -17,9 +17,9 @@
 
 (defn set-chat-command [message-id command]
   (let [command-key (keyword (:name command))
-        params      (:set-params command)]
-    (dispatch [:set-chat-input-metadata (assoc params :to-message-id message-id)])
-    (dispatch [:select-chat-input-command command])))
+        metadata    (-> (:set-params command)
+                        (assoc :to-message-id message-id))]
+    (dispatch [:select-chat-input-command command metadata])))
 
 (def min-scale 1)
 (def max-scale 1.3)

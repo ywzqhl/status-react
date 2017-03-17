@@ -72,7 +72,8 @@
                          :on-change-text         #(do (dispatch [:set-chat-input-text %])
                                                       (dispatch [:load-chat-parameter-box (:command command)])
                                                       (when (not command)
-                                                        (dispatch [:set-chat-input-metadata nil])))
+                                                        (dispatch [:set-chat-input-metadata nil])
+                                                        (dispatch [:set-chat-ui-props :result-box nil])))
                          :on-content-size-change #(let [h (-> (.-nativeEvent %)
                                                               (.-contentSize)
                                                               (.-height))]

@@ -6,17 +6,24 @@
                                                 touchable-highlight
                                                 text
                                                 icon]]
-            [status-im.chat.styles.input.parameter-box :as style]
+            [status-im.chat.styles.input.result-box :as style]
             [status-im.i18n :refer [label]]
             [taoensso.timbre :as log]))
 
 (defn header [title]
   [view {:style style/header-container}
-   [text title]])
+   [view style/header-icon]
+   [view style/header-title-container
+    [text {:style style/header-title-text
+           :font :medium}
+     title]
+    [view style/header-close-container
+     [icon :close_gray style/header-close-icon]]]])
 
 (defview result-box-container [markup]
   [result-box [:chat-ui-props :result-box]]
-  markup)
+  [view {:flex 1}
+   markup])
 
 (defview result-box-view []
   [input-height [:chat-ui-props :input-height]
@@ -24,5 +31,4 @@
   (when result-box
     [view (style/root 250 input-height)
      [header title]
-     [result-box-container markup]
-     [view {:flex 1}]]))
+     [result-box-container markup]]))

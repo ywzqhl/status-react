@@ -44,12 +44,14 @@
             [tailrecursion.priority-map :refer [priority-map-by]]))
 
 (register-handler :set-chat-ui-props
-  (fn [db [_ ui-element value]]
-    (assoc-in db [:chat-ui-props ui-element] value)))
+  (fn [{:keys [current-chat-id] :as db} [_ ui-element value chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (assoc-in db [:chat-ui-props chat-id ui-element] value))))
 
 (register-handler :toggle-chat-ui-props
-  (fn [{:keys [chat-ui-props] :as db} [_ ui-element]]
-    (assoc-in db [:chat-ui-props ui-element] (not (ui-element chat-ui-props)))))
+  (fn [{:keys [current-chat-id chat-ui-props] :as db} [_ ui-element chat-id]]
+    (let [chat-id (or chat-id current-chat-id)]
+      (assoc-in db [:chat-ui-props chat-id ui-element] (not (ui-element chat-ui-props))))))
 
 (register-handler :show-message-details
   (u/side-effect!

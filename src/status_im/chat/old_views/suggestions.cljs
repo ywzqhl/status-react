@@ -32,8 +32,7 @@
    {:keys [name chat-id]} [:get-current-chat]
    {:keys [added]} [:get-request message-id]]
   [touchable-highlight
-   {:on-press #(do (dispatch [:set-chat-input-metadata {:to-message-id message-id}])
-                   (dispatch [:select-chat-input-command response]))}
+   {:on-press #(dispatch [:select-chat-input-command response {:to-message-id message-id}])}
    [view st/request-container
     [view st/request-icon-container
      [view (st/request-icon-background color)

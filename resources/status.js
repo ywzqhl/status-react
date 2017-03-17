@@ -125,6 +125,12 @@ function webView(url) {
     }];
 }
 
+function bridgedWebView(url) {
+  return ['bridged-web-view', {
+    url: url
+  }];
+}
+
 function validationMessage(titleText, descriptionText) {
     var titleStyle = {
         style: {
@@ -191,7 +197,8 @@ var status = {
         touchable: touchable,
         scrollView: scrollView,
         webView: webView,
-        validationMessage: validationMessage
+        validationMessage: validationMessage,
+        bridgedWebView: bridgedWebView
     }
 };
 

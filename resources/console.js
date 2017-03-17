@@ -1872,9 +1872,15 @@ status.command({
         color: "black"
       };
 
+      var url = params.args.url;
+      if (!/^[a-zA-Z-_]+:/.test(url)) {
+        url = 'http://' + url;
+      }
+
       return {
-          title: "My fucking app",
-          markup: status.components.text({style: style}, "Test onSend")
+          title: "Browser",
+          dynamicTitle: true,
+          markup: status.components.bridgedWebView(url)
       };
     }
 });

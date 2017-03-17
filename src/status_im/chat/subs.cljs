@@ -26,8 +26,9 @@
 
 (register-sub
   :chat-ui-props
-  (fn [db [_ ui-element]]
-    (reaction (get-in @db [:chat-ui-props ui-element]))))
+  (fn [db [_ ui-element chat-id]]
+    (let [chat-id (or chat-id (:current-chat-id @db))]
+      (reaction (get-in @db [:chat-ui-props chat-id ui-element])))))
 
 (register-sub
   :chat-input-margin
@@ -111,7 +112,7 @@
   :show-suggestions?
   (fn [db [_ chat-id]]
     (let [chat-id           (or chat-id (@db :current-chat-id))
-          show-suggestions? (subscribe [:chat-ui-props :show-suggestions?])
+          show-suggestions? (subscribe [:chat-ui-props :show-suggestions? chat-id])
           input-text        (subscribe [:chat :input-text chat-id])
           selected-command  (subscribe [:selected-chat-command chat-id])]
       (reaction
