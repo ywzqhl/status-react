@@ -317,7 +317,7 @@
            :style  st/photo}]])
 
 (defn message-body
-  [{:keys [outgoing message-type same-author from index] :as message} content]
+  [{:keys [last-outgoing? message-type same-author from index] :as message} content]
   (let [delivery-status :seen-by-everyone]
     [view st/group-message-wrapper
      [view (st/message-body message)
@@ -326,7 +326,7 @@
          [member-photo from])]
       [view (st/group-message-view message)
        content
-       (when outgoing
+       (when last-outgoing?
          (if (= (keyword message-type) :group-user-message)
            [group-message-delivery-status message]
            [message-delivery-status message]))]]]))
