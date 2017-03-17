@@ -10,10 +10,9 @@
     [status-im.utils.random :as random]))
 
 (def discover-topic-prefix "status-discover-")
-(def discover-hashtag-prefix "status-hashtag-")
 
-(defn- make-discover-topic [identity]
-  (str discover-topic-prefix identity))
+(defn make-discover-topic [user-identity]
+  (str discover-topic-prefix user-identity))
 
 (s/def :send-online/message
   (s/merge :protocol/message
@@ -33,25 +32,21 @@
                     :topics        [(make-discover-topic (:from message))]})]
     (d/add-pending-message! web3 message')))
 
-(s/def ::identity :message/from)
+(s/def ::user-identity :message/from)
 (s/def :watch-user/options
-  (s/keys :req-un [:options/web3 :message/keypair ::identity ::callback]))
+  (s/keys :req-un [:message/keypair ::user-identity]))
 
 (defn watch-user!
-  [{:keys [web3 identity] :as options}]
+  [{:keys [user-identity keypair] :as options}]
   {:pre [(valid? :watch-user/options options)]}
-  (f/add-filter!
-    web3
-    {:from   identity
-     :topics [(make-discover-topic identity)]}
-    (l/message-listener (dissoc options :identity))))
+  (let [topic (make-discover-topic user-identity)]
+    (l/listen-topic! topic)
+    (l/add-keypair! topic keypair)
+    topic))
 
 (defn stop-watching-user!
-  [{:keys [web3 identity]}]
-  (f/remove-filter!
-    web3
-    {:from   identity
-     :topics [(make-discover-topic identity)]}))
+  [{:keys [user-identity]}]
+  (l/ignore-topic! (make-discover-topic user-identity)))
 
 (s/def :contact-request/contact map?)
 

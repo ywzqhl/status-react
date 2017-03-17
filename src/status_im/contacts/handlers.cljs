@@ -48,20 +48,21 @@
   (contacts/save contact))
 
 (defn watch-contact
-  [{:keys [web3]} [_ {:keys [whisper-identity public-key private-key]}]]
+  [{:keys [web3 current-public-key]} [_ {:keys [whisper-identity public-key private-key]}]]
   (when (and public-key private-key)
-    (protocol/watch-user! {:web3     web3
-                           :identity whisper-identity
-                           :keypair  {:public  public-key
-                                      :private private-key}
-                           :callback #(dispatch [:incoming-message %1 %2])})))
+    (protocol/watch-user! {:web3          web3
+                           :user-identity whisper-identity
+                           :identity      current-public-key
+                           :keypair       {:public  public-key
+                                           :private private-key}
+                           :callback      #(dispatch [:incoming-message %1 %2])})))
 
 (register-handler :watch-contact (u/side-effect! watch-contact))
 
 (defn stop-watching-contact
   [{:keys [web3]} [_ {:keys [whisper-identity]}]]
-  (protocol/stop-watching-user! {:web3     web3
-                                 :identity whisper-identity}))
+  (protocol/stop-watching-user! {:web3          web3
+                                 :user-identity whisper-identity}))
 
 (register-handler :stop-watching-contact (u/side-effect! stop-watching-contact))
 

@@ -13,7 +13,7 @@
 (defonce messages (atom {}))
 
 (defn prepare-message
-  [{:keys [payload keypair to] :as message}]
+  [{:keys [payload keypair to topics] :as message}]
   (debug :prepare-message!)
   (let [{:keys [public]} keypair
 
@@ -24,6 +24,7 @@
 
         payload' (-> message
                      (select-keys [:message-id :requires-ack? :type :clock-value])
+                     (assoc :topic (first topics))
                      (merge payload)
                      (assoc :content content')
                      prn-str

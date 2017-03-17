@@ -100,7 +100,9 @@
   (u/side-effect!
     (fn [_ [_ type {:keys [payload ttl id] :as message}]]
       (let [message-id (or id (:message-id payload))]
-        (when-not (cache/exists? message-id type)
+        (when (and
+                message-id
+                (not (cache/exists? message-id type)))
           (let [ttl-s             (* 1000 (or ttl 120))
                 processed-message {:id         (random/id)
                                    :message-id message-id

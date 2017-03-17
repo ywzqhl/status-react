@@ -114,16 +114,12 @@
   (notify-about-group! :update-group options))
 
 (defn stop-watching-group!
-  [{:keys [web3 group-id]}]
+  [{:keys [group-id]}]
   {:pre [(valid? :message/chat-id group-id)]}
-  (f/remove-filter! web3 {:topics [group-id]}))
+  (l/ignore-topic! group-id))
 
 (defn start-watching-group!
-  [{:keys [web3 group-id keypair callback identity]}]
-  (f/add-filter!
-    web3
-    {:topics [group-id]}
-    (l/message-listener {:web3     web3
-                         :identity identity
-                         :callback callback
-                         :keypair  keypair})))
+  [{:keys [group-id keypair]}]
+  (l/listen-topic! group-id)
+  (l/add-keypair! group-id keypair)
+  group-id)

@@ -29,8 +29,30 @@
     (decrypt key content)
     {:content content}))
 
+(defonce topic->keypair (atom {}))
+
+(defn clear-topic->keypair []
+  (reset! topic->keypair {}))
+
+(defn get-keypair [topic]
+  (get @topic->keypair topic))
+
+(defn add-keypair! [topic keypair]
+  (swap! topic->keypair assoc topic keypair))
+
+(defonce ignore-list (atom #{}))
+
+(defn clear-ignore-list! []
+  (reset! ignore-list #{}))
+
+(defn ignore-topic! [topic]
+  (swap! ignore-list conj topic))
+
+(defn listen-topic! [topic]
+  (swap! ignore-list disj topic))
+
 (defn message-listener
-  [{:keys [web3 identity callback keypair]}]
+  [{:keys [web3 identity callback]}]
   (fn [error js-message]
     ;; todo handle error
     (when error
@@ -40,15 +62,17 @@
       (let [{:keys [from payload to] :as message}
             (js->clj js-message :keywordize-keys true)
 
-            {{:keys [type ack?] :as payload'} :payload
-             payload-error                    :error}
+            {{:keys [type ack? topic] :as payload'} :payload
+             payload-error                          :error}
             (parse-payload payload)]
-        (when (and (not payload-error)
+        (when (and (not (@ignore-list topic))
+                   (not payload-error)
                    (or (not= (i/normalize-hex identity)
                              (i/normalize-hex from))
                        ;; allow user to receive his own discoveries
                        (= type :discover)))
-          (let [{:keys [content error]} (parse-content (:private keypair)
+          (let [keypair (get-keypair topic)
+                {:keys [content error]} (parse-content (:private keypair)
                                                        payload'
                                                        (not= "0x0" to))]
             (if error

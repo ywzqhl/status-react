@@ -23,7 +23,15 @@
 (def reset-pending-messages! d/reset-pending-messages!)
 
 ;; group
-(def start-watching-group! group/start-watching-group!)
+(defn start-watching-group!
+  [{:keys [web3 identity callback] :as options}]
+  (let [topic (group/start-watching-group! options)
+        listener-options {:web3     web3
+                          :identity identity
+                          :callback callback}
+        listener (l/message-listener listener-options)]
+    (f/filter-topic! web3 {:topic topic} listener)))
+
 (def stop-watching-group! group/stop-watching-group!)
 (def send-group-message! group/send!)
 (def send-public-group-message! group/send-to-public-group!)
@@ -38,7 +46,14 @@
 (def new-keypair! e/new-keypair!)
 
 ;; discoveries
-(def watch-user! discoveries/watch-user!)
+(defn watch-user! [{:keys [web3 identity callback] :as options}]
+  (let [topic (discoveries/watch-user! options)
+        listener-options {:web3     web3
+                          :identity identity
+                          :callback callback}
+        listener (l/message-listener listener-options)]
+    (f/filter-topic! web3 {:topic topic} listener)))
+
 (def stop-watching-user! discoveries/stop-watching-user!)
 (def contact-request! discoveries/contact-request!)
 (def broadcast-profile! discoveries/broadcast-profile!)
@@ -69,7 +84,11 @@
                      ::callback :discoveries/hashtags ::contacts])
     ::d/delivery-options))
 
-(def stop-watching-all! f/remove-all-filters!)
+(defn stop-watching-all! []
+  (l/clear-ignore-list!)
+  (l/clear-topic->keypair)
+  (f/remove-all-filters!))
+
 (def reset-all-pending-messages! d/reset-all-pending-messages!)
 
 (defn init-whisper!
@@ -83,23 +102,30 @@
   (let [web3             (u/make-web3 rpc-url)
         listener-options {:web3     web3
                           :identity identity
-                          :callback callback}]
-    ;; start listening to groups
-    (doseq [group groups]
-      (let [options (merge listener-options group)]
-        (group/start-watching-group! options)))
+                          :callback callback}
+        listener         (l/message-listener listener-options)
+
+        ;; prepare group topics
+        group-topics     (for [group groups]
+                           (let [options (merge listener-options group)]
+                             (group/start-watching-group! options)))
+
+        ;; prepare profile topics
+        profile-topics   (for [{:keys [identity keypair]} contacts]
+                           (discoveries/watch-user! {:user-identity identity
+                                                     :keypair       keypair}))
+        all-topics       (vec (concat group-topics profile-topics))]
     ;; start listening to user's inbox
-    (f/add-filter!
+    (f/filter-topics!
       web3
       {:to     identity
        :topics [f/status-topic]}
-      (l/message-listener listener-options))
-    ;; start listening to profiles
-    (doseq [{:keys [identity keypair]} contacts]
-      (watch-user! {:web3     web3
-                    :identity identity
-                    :keypair  keypair
-                    :callback callback}))
+      listener)
+
+    ;; start listening all other topics
+    (when (seq all-topics)
+      (f/filter-topics! web3 {:topics [all-topics]} listener))
+
     (d/set-pending-mesage-callback! callback)
     (let [online-message #(discoveries/send-online!
                             {:web3    web3
