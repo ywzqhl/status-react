@@ -2,6 +2,7 @@
   (:require [status-im.components.styles :refer [color-white
                                                  color-black
                                                  color-blue
+                                                 color-light-blue
                                                  selected-message-color
                                                  text1-color
                                                  text2-color
@@ -26,8 +27,8 @@
   [{:keys [new-day same-author same-direction]}]
   (cond
     new-day 0
-    same-author 4
-    same-direction 20
+    same-author 8
+    same-direction 16
     :else 10))
 
 (defn last-message-padding
@@ -115,24 +116,25 @@
             :paddingBottom 14})))
 
 (def author
-  {:font-size 13
-   :color color-gray4})
+  {:font-size     13
+   :color         color-gray4
+   :margin-bottom 5})
 
 (def comand-request-view
   {:paddingRight 16})
 
 (def command-request-message-view
-  {:borderRadius    14
-   :padding         12
-   :paddingRight    28
-   :backgroundColor color-white})
+  {:borderRadius     14
+   :padding-vertical 10
+   :paddingRight     28
+   :backgroundColor  color-white})
 
 (def command-request-from-text
   (merge style-sub-text {:marginBottom 2}))
 
-(defn command-request-image-touchable [top-offset?]
+(defn command-request-image-touchable []
   {:position       :absolute
-   :top            (if top-offset? 4 -1)
+   :top            0
    :right          -8
    :alignItems     :center
    :justifyContent :center
@@ -166,7 +168,8 @@
    :height    14})
 
 (def content-command-view
-  {:flexDirection :column})
+  {:flexDirection :column
+   :alignItems    :flex-start})
 
 (def command-container
   {:flexDirection :row
@@ -174,7 +177,7 @@
    :marginRight   32})
 
 (def command-image
-  {:margin-top 5
+  {:margin-top 9
    :width      12
    :height     13
    :tint-color :#a9a9a9cc})

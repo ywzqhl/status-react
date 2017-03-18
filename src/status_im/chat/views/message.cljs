@@ -1,7 +1,6 @@
 (ns status-im.chat.views.message
   (:require-macros [status-im.utils.views :refer [defview]])
-  (:require [clojure.string :as s]
-            [re-frame.core :refer [subscribe dispatch]]
+  (:require [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as r]
             [status-im.i18n :refer [message-status-label]]
             [status-im.components.react :refer [view
@@ -158,7 +157,7 @@
   {"\\*[^*]+\\*" {:font-weight :bold}
    "~[^~]+~"     {:font-style :italic}})
 
-(def regx (re-pattern (s/join "|" (map first replacements))))
+(def regx (re-pattern (str/join "|" (map first replacements))))
 
 (defn get-style [string]
   (->> replacements
@@ -173,7 +172,7 @@
 ;; todo rewrite this, naive implementation
 (defn- parse-text [string]
   (if (string? string)
-    (let [general-text  (s/split string regx)
+    (let [general-text  (str/split string regx)
           general-text' (if (zero? (count general-text))
                           [nil]
                           general-text)
@@ -210,11 +209,13 @@
 
 (defmethod message-content content-type-command-request
   [wrapper message]
-  [wrapper message [message-content-command-request message]])
+  [wrapper message
+   [message-view message [message-content-command-request message]]])
 
 (defmethod message-content c/content-type-wallet-request
   [wrapper message]
-  [wrapper message [message-content-command-request message]])
+  [wrapper message
+   [message-view message [message-content-command-request message]]])
 
 (defmethod message-content text-content-type
   [wrapper message]
@@ -311,7 +312,7 @@
 (defview member-photo [from]
   [photo-path [:photo-path from]]
   [view st/photo-view
-   [image {:source {:uri (if (s/blank? photo-path)
+   [image {:source {:uri (if (str/blank? photo-path)
                            (identicon from)
                            photo-path)}
            :style  st/photo}]])
@@ -322,7 +323,8 @@
     [view st/group-message-wrapper
      [view (st/message-body message)
       [view st/message-author
-       (when (or (= index 1) (not same-author))
+       (when (and (or (= index 1) (not same-author))
+                  (not= from "me"))
          [member-photo from])]
       [view (st/group-message-view message)
        content
