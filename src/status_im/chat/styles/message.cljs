@@ -26,10 +26,10 @@
 (defn message-padding-top
   [{:keys [new-day same-author same-direction]}]
   (cond
-    new-day 0
-    same-author 8
+    new-day        0
+    same-author    8
     same-direction 16
-    :else 10))
+    :else          10))
 
 (defn last-message-padding
   [{:keys [last-message typing]}]
@@ -73,12 +73,13 @@
   (let [align (if outgoing :flex-end :flex-start)]
     {:flexDirection :column
      :width         260
-     :padding-left    8
-     :padding-right   8
+     :padding-left  8
+     :padding-right 8
      :alignItems    align}))
 
-(def message-author {:width 24
-                     :alignSelf :flex-start})
+(def message-author
+  {:width     24
+   :alignSelf :flex-start})
 
 (def photo-view {:borderRadius 12})
 (def photo
