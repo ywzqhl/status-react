@@ -43,7 +43,9 @@
 (defview message-author-name [{:keys [outgoing from] :as message}]
   [current-account [:get-current-account]
    incoming-name [:contact-name-by-identity from]]
-  (let [name (if outgoing (:name current-account) incoming-name)]
+  (if-let [name (if outgoing
+                  (:name current-account)
+                  (or incoming-name "Unknown contact"))]
     [text {:style st/author} name]))
 
 (defn message-content-status [_]
