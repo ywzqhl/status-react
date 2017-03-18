@@ -55,13 +55,10 @@
     [last-activity {:sync-state sync-state}]
     (if public?
       [view {:flex-direction :row}
-       [text {:font  :default
-              :style (get-in platform-specific [:component-styles :toolbar-last-activity])}
+       [text {:style (get-in platform-specific [:component-styles :toolbar-last-activity])}
         (label :t/public-group-status)]]
       [view {:flex-direction :row}
-       [icon :group st/group-icon]
-       [text {:style st/members
-              :font  :medium}
+       [text {:style st/members}
         (if public?
           (label :t/public-group-status)
           (let [cnt (inc (count contacts))]

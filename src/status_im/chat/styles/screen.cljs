@@ -3,7 +3,9 @@
                                                  selected-message-color
                                                  separator-color
                                                  text1-color
-                                                 text2-color]]
+                                                 text2-color
+                                                 text4-color
+                                                 color-gray6]]
             [status-im.components.toolbar.styles :refer [toolbar-background1]]))
 
 (def chat-view
@@ -49,8 +51,7 @@
    :justify-content :center})
 
 (def chat-name-text
-  {:color      text1-color
-   :margin-top 2
+  {:color      color-gray6
    :fontSize   16})
 
 (def group-icon
@@ -64,10 +65,8 @@
    :height 8})
 
 (def members
-  {:marginTop  -0.5
-   :marginLeft 4
-   :fontSize   12
-   :color      text2-color})
+  {:fontSize   13
+   :color      text4-color})
 
 (def last-activity
   {:height 18})
